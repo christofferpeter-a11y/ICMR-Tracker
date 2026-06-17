@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICMR Setup Tracker – SAP S/4HANA</title>
+<style>
+  :root {
+    --blue: #185FA5;
+    --blue-light: #E6F1FB;
+    --blue-mid: #B5D4F4;
+    --green: #0F6E56;
+    --green-light: #E1F5EE;
+    --coral: #993C1D;
+    --coral-light: #FAECE7;
+    --purple: #534AB7;
+    --purple-light: #EEEDFE;
+    --gray: #5F5E5A;
+    --gray-light: #F1EFE8;
+    --amber: #854F0B;
+    --amber-light: #FAEEDA;
+    --text: #1a1a18;
+    --text-secondary: #5a5a56;
+    --text-hint: #8a8a84;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.18);
+    --surface: #ffffff;
+    --surface2: #f7f6f3;
+    --surface3: #f0efe9;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--surface3);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    height: 58px;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .header-logo {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
+    color: var(--text-hint); text-transform: uppercase;
+  }
+  .header-title { font-size: 15px; font-weight: 500; }
+  .header-sep { width: 1px; height: 20px; background: var(--border-strong); }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+
+  /* Progress bar */
+  .progress-wrap {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 2rem;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .progress-track { flex: 1; height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--blue); border-radius: 3px; transition: width 0.4s; }
+  .progress-stats { display: flex; gap: 20px; flex-shrink: 0; }
+  .pstat { text-align: center; }
+  .pstat-val { font-size: 18px; font-weight: 600; }
+  .pstat-lbl { font-size: 11px; color: var(--text-hint); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* Layout */
+  .layout { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; max-width: 1300px; margin: 0 auto; padding: 1.5rem 2rem; align-items: start; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+  /* Phase tabs */
+  .phase-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .phase-tab {
+    font-size: 12px; padding: 5px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 20px; background: var(--surface);
+    cursor: pointer; color: var(--text-secondary);
+    transition: all 0.15s; font-weight: 500;
+  }
+  .phase-tab:hover { border-color: var(--blue); color: var(--blue); }
+  .phase-tab.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+  /* Phase section */
+  .phase { margin-bottom: 1.25rem; }
+  .phase-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .phase-header:hover { background: var(--surface2); }
+  .phase-badge {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+  .phase-info { flex: 1; }
+  .phase-name { font-size: 14px; font-weight: 600; }
+  .phase-desc { font-size: 12px; color: var(--text-secondary); }
+  .phase-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .phase-count { font-size: 12px; color: var(--text-hint); }
+  .phase-chevron { font-size: 18px; color: var(--text-hint); transition: transform 0.2s; }
+  .phase-chevron.open { transform: rotate(180deg); }
+
+  /* Steps */
+  .steps-list { display: flex; flex-direction: column; gap: 4px; padding-left: 8px; }
+
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .step.done { border-left: 3px solid #2e9e6b; }
+  .step:hover { border-color: var(--border-strong); }
+
+  .step-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; cursor: pointer;
+  }
+  .step-cb { flex-shrink: 0; width: 17px; height: 17px; cursor: pointer; accent-color: #2e9e6b; }
+  .step-num { font-size: 11px; color: var(--text-hint); min-width: 24px; font-family: var(--font-mono); }
+  .step-title {
+    flex: 1; font-size: 13px; font-weight: 500;
+    transition: color 0.15s;
+  }
+  .step.done .step-title { color: var(--text-hint); text-decoration: line-through; text-decoration-color: #aaa; }
+  .step-tcode {
+    font-size: 10px; font-family: var(--font-mono);
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px 6px; color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+  .step-expand { font-size: 16px; color: var(--text-hint); transition: transform 0.2s; flex-shrink: 0; }
+  .step-expand.open { transform: rotate(180deg); }
+
+  .step-body {
+    display: none; padding: 0 14px 14px 50px;
+    font-size: 13px; color: var(--text-secondary); line-height: 1.65;
+    border-top: 1px solid var(--border);
+  }
+  .step-body.open { display: block; padding-top: 12px; }
+  .step-body ul { padding-left: 18px; margin: 6px 0; }
+  .step-body li { margin-bottom: 3px; }
+  .step-body code {
+    font-family: var(--font-mono); font-size: 11px;
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 1px 5px; border-radius: 3px; color: var(--text);
+  }
+  .step-note {
+    background: var(--blue-light); border-left: 3px solid var(--blue);
+    border-radius: 0 4px 4px 0; padding: 8px 10px; margin-top: 10px;
+    font-size: 12px; color: #0c447c; line-height: 1.5;
+  }
+
+  /* Add step button */
+  .add-step-row { padding: 6px 8px; }
+  .add-step-btn {
+    width: 100%; padding: 8px 12px;
+    border: 1.5px dashed var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: transparent; cursor: pointer;
+    font-size: 12px; color: var(--text-hint);
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.15s;
+  }
+  .add-step-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+
+  /* Add step form */
+  .add-step-form {
+    background: var(--blue-light); border: 1px solid var(--blue-mid);
+    border-radius: var(--radius-sm); padding: 12px 14px; margin: 4px 8px;
+    display: none;
+  }
+  .add-step-form.open { display: block; }
+  .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .form-input {
+    flex: 1; padding: 7px 10px; font-size: 13px;
+    border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text); font-family: var(--font);
+  }
+  .form-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(24,95,165,0.12); }
+  .form-textarea {
+    width: 100%; padding: 7px 10px; font-size: 13px;
+    border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text); font-family: var(--font);
+    resize: vertical; min-height: 60px; margin-bottom: 8px;
+  }
+  .form-textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(24,95,165,0.12); }
+  .form-actions { display: flex; gap: 6px; }
+  .btn {
+    padding: 6px 14px; font-size: 12px; font-weight: 500;
+    border-radius: var(--radius-sm); cursor: pointer; border: 1px solid;
+    transition: all 0.15s; font-family: var(--font);
+  }
+  .btn-primary { background: var(--blue); color: white; border-color: var(--blue); }
+  .btn-primary:hover { background: #1350880; }
+  .btn-ghost { background: transparent; color: var(--text-secondary); border-color: var(--border-strong); }
+  .btn-ghost:hover { background: var(--surface2); }
+  .btn-danger { background: transparent; color: #993C1D; border-color: #f0997b; font-size: 11px; padding: 4px 8px; }
+  .btn-danger:hover { background: var(--coral-light); }
+
+  /* Sidebar */
+  .sidebar { display: flex; flex-direction: column; gap: 1rem; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title { font-size: 13px; font-weight: 600; }
+  .card-body { padding: 12px 16px; }
+
+  /* Notes */
+  .notes-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+  .note-item {
+    background: var(--surface2); border-radius: var(--radius-sm);
+    padding: 10px 12px; position: relative;
+    border-left: 3px solid var(--border-strong);
+  }
+  .note-item.type-todo { border-color: var(--amber); }
+  .note-item.type-issue { border-color: var(--coral); }
+  .note-item.type-note { border-color: var(--blue); }
+  .note-item.type-done { border-color: #2e9e6b; opacity: 0.6; }
+  .note-header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .note-type-badge {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; padding: 1px 6px; border-radius: 10px;
+  }
+  .badge-todo { background: var(--amber-light); color: var(--amber); }
+  .badge-issue { background: var(--coral-light); color: var(--coral); }
+  .badge-note { background: var(--blue-light); color: var(--blue); }
+  .badge-done { background: var(--green-light); color: var(--green); }
+  .note-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  .note-date { font-size: 11px; color: var(--text-hint); margin-top: 4px; }
+  .note-actions { display: flex; gap: 4px; margin-top: 6px; }
+
+  .note-form { display: none; padding-top: 10px; border-top: 1px solid var(--border); }
+  .note-form.open { display: block; }
+  .note-type-row { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .type-btn {
+    font-size: 11px; font-weight: 600; padding: 3px 10px;
+    border-radius: 20px; cursor: pointer; border: 1px solid;
+    transition: all 0.15s;
+  }
+  .type-btn[data-type="todo"] { color: var(--amber); border-color: var(--amber); }
+  .type-btn[data-type="issue"] { color: var(--coral); border-color: var(--coral); }
+  .type-btn[data-type="note"] { color: var(--blue); border-color: var(--blue); }
+  .type-btn.selected[data-type="todo"] { background: var(--amber-light); }
+  .type-btn.selected[data-type="issue"] { background: var(--coral-light); }
+  .type-btn.selected[data-type="note"] { background: var(--blue-light); }
+
+  /* Export */
+  .export-btn {
+    width: 100%; padding: 9px; font-size: 13px; font-weight: 500;
+    background: var(--surface2); border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm); cursor: pointer; color: var(--text-secondary);
+    transition: all 0.15s; font-family: var(--font);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .export-btn:hover { background: var(--blue-light); color: var(--blue); border-color: var(--blue); }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 16px; color: var(--text-hint); font-size: 13px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1a1a18; color: white; font-size: 13px;
+    padding: 10px 16px; border-radius: var(--radius-sm);
+    opacity: 0; transform: translateY(8px);
+    transition: all 0.25s; pointer-events: none; z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* Delete step button (on hover) */
+  .step-del {
+    display: none; background: transparent; border: none;
+    cursor: pointer; font-size: 14px; color: var(--text-hint); padding: 2px 4px;
+  }
+  .step-header:hover .step-del { display: inline-flex; }
+  .step-del:hover { color: var(--coral); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="header-logo">SAP ICMR</span>
+    <div class="header-sep"></div>
+    <span class="header-title">Implementeringsguide – Intercompany Matching & Reconciliation</span>
+  </div>
+  <div class="header-right">
+    <button class="export-btn" onclick="exportData()" style="width:auto;padding:6px 14px;font-size:12px;">⬇ Gem backup</button>
+    <label class="export-btn" style="width:auto;padding:6px 14px;font-size:12px;cursor:pointer;">
+      ⬆ Indlæs backup
+      <input type="file" accept=".json" onchange="importData(event)" style="display:none">
+    </label>
+  </div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+  <div class="progress-stats">
+    <div class="pstat"><div class="pstat-val" id="statDone">0</div><div class="pstat-lbl">Afsluttet</div></div>
+    <div class="pstat"><div class="pstat-val" id="statTotal">0</div><div class="pstat-lbl">Steps i alt</div></div>
+    <div class="pstat"><div class="pstat-val" id="statPct">0%</div><div class="pstat-lbl">Fremgang</div></div>
+  </div>
+</div>
+
+<div class="layout">
+  <main>
+    <div class="phase-tabs" id="phaseTabs"></div>
+    <div id="phaseList"></div>
+  </main>
+
+  <aside class="sidebar">
+    <!-- Notes card -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📋 Noter & To-do</span>
+        <button class="btn btn-primary" style="font-size:11px;padding:4px 10px" onclick="toggleNoteForm()">+ Tilføj</button>
+      </div>
+      <div class="card-body">
+        <div class="note-form" id="noteForm">
+          <div class="note-type-row">
+            <button class="type-btn selected" data-type="todo" onclick="selectNoteType('todo',this)">To-do</button>
+            <button class="type-btn" data-type="issue" onclick="selectNoteType('issue',this)">Afklares</button>
+            <button class="type-btn" data-type="note" onclick="selectNoteType('note',this)">Note</button>
+          </div>
+          <textarea class="form-textarea" id="noteText" placeholder="Skriv en note, to-do eller et spørgsmål der skal afklares..." rows="3"></textarea>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="addNote()">Gem</button>
+            <button class="btn btn-ghost" onclick="toggleNoteForm()">Annuller</button>
+          </div>
+        </div>
+        <div class="notes-list" id="notesList"></div>
+        <div class="empty hidden" id="notesEmpty">Ingen noter endnu</div>
+      </div>
+    </div>
+
+    <!-- Summary card -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">📊 Status per fase</span></div>
+      <div class="card-body" id="phaseSummary" style="padding:8px 12px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">ℹ️ Vejledning</span></div>
+      <div class="card-body" style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
+        <p style="margin-bottom:6px">✅ Kryds steps af efterhånden som I gennemfører dem.</p>
+        <p style="margin-bottom:6px">➕ Tilføj egne steps til enhver fase ved at klikke "Tilføj step".</p>
+        <p style="margin-bottom:6px">📝 Brug notelisten til at holde styr på åbne spørgsmål og to-do's.</p>
+        <p>💾 Data gemmes automatisk i browseren. Brug "Gem backup" til at dele status med kunden som .json-fil.</p>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DEFAULT_PHASES = [
+  {id:'1',color:'#185FA5',bg:'#E6F1FB',title:'Autorisation & Business Role',desc:'Tildel rettigheder i Fiori og backend',steps:[
+    {id:'1-0',name:'Opret Business Role baseret på SAP_BR_RECON_ACCOUNTANT',tcode:'',body:'Gå til Fiori Launchpad → Manage Business Roles. Kopier standardrollen <code>SAP_BR_RECON_ACCOUNTANT</code> (General Ledger Accountant – Intercompany). Tilpas med følgende Business Catalogs:<ul><li><code>SAP_FIN_BC_ICA_ME_CONFIG</code> – Matching Settings (definer regler, metoder, workflows)</li><li><code>SAP_FIN_BC_ICA_ME_RUN</code> – Matching Operations (kør matching, juster resultater)</li><li><code>SAP_FIN_BC_ICA_RECON_CFG</code> – Reconciliation Settings (definer cases, hierarkier)</li><li><code>SAP_FIN_BC_ICA_RECON_RUN</code> – Reconciliation Operations (se status, balancer)</li><li><code>SAP_FIN_BC_ICA_CONFIG</code> – Intercompany Configuration (posting rules)</li></ul><div class="step-note">Tildel kun de catalogs der er relevante for den pågældende bruger.</div>'},
+    {id:'1-1',name:'Sæt backend-autorisationer op',tcode:'PFCG',body:'Kør transaktion PFCG i backend systemet. Opret/tilpas roller med ICMR-specifikke autorisationsobjekter. Sørg for at workflow-godkendere har korrekte roller i både frontend og backend.'},
+    {id:'1-2',name:'Opret Business Partner for workflow-brugere',tcode:'SU01',body:'Brugere der skal modtage workflow-notifikationer skal konverteres til Business Partners:<ul><li>Opret Employee i HR</li><li>Tildel SU01-bruger til Employee</li><li>Definer email-adresse på Employee</li><li>Kør Business Partner Synchronization</li></ul><div class="step-note">Se SAP Note 2570961 for detaljerede instruktioner.</div>'}
+  ]},
+  {id:'2',color:'#0F6E56',bg:'#E1F5EE',title:'Data Source & Customizing',desc:'Konfigurer datakilde og grundindstillinger via ICAIMG',steps:[
+    {id:'2-0',name:'Åbn ICMR Customizing',tcode:'ICAIMG',body:'Transaktion ICAIMG er indgangsporten til alle ICMR Customizing-aktiviteter. Herfra kan du tilgå: Maintain Data Sources, Maintain Reason Codes, Assign Posting Rules, Activate Reconciliation Close Process, Define Organizational Unit Hierarchies.'},
+    {id:'2-1',name:'Verificer/tilpas Data Source',tcode:'ICADS',body:'Kør ICADS (Maintain Data Sources). Standard datakilde er baseret på <code>ACDOCA</code> (Universal Journal). Kontrollér:<ul><li>Mandatory Filter Fields (MFF) – styrer hvilke perioder der rulles ind</li><li>CDS View – definerer tilgængelige felter for matching regler</li><li>Matching Dimensions – Company, Profit Center, Consolidation Unit</li></ul><div class="step-note">Delta Update Mode: Efterfølgende matching runs læser kun nye dokumenter siden sidst. Se SAP Note 3114279.</div>'},
+    {id:'2-2',name:'Aktiver SAP Best Practices indhold',tcode:'',body:'Aktiver scope item <code>40Y</code> eller <code>1SG</code> for adgang til pre-leverede sample objekter (SF101 matching method og reconciliation case).<div class="step-note">Se SAP Note 2965516 for detaljer.</div>'}
+  ]},
+  {id:'3',color:'#993C1D',bg:'#FAECE7',title:'Intercompany Document Matching',desc:'Definer matchingmetoder, regler og planlæg matching runs',steps:[
+    {id:'3-0',name:'Definer Matching Method',tcode:'',body:'Åbn app "Define Matching Methods". En Matching Method er en samling af prioriterede regler. Konfigurér:<ul><li>General data: Navn, beskrivelse, data source</li><li>Data Filters: Begræns data til f.eks. open items, IC-konti</li><li>Data Slices: Del 1 = Leading Unit (AR), Del 2 = Partner Unit (AP)</li><li>Matching Rules: Defineres i prioriteret rækkefølge</li></ul><div class="step-note">Brug sample metoden SF101 som udgangspunkt – 16 regler for AR/AP. Tilpas filters til kundens faktiske data.</div>'},
+    {id:'3-1',name:'Definer Matching Rules',tcode:'',body:'For hver regel i Matching Method:<ul><li>Expression fields: Felter der sammenlignes – beløb, modpart, dokumentreference</li><li>Operator: Equal To (grøn), Opposite (grøn), andre (gul markering)</li><li>Regeltype: Auto-Assign, Group as Assigned, Auto-Assign as Exception</li><li>Default Reason Code: Tildeles ved match via denne regel</li></ul>'},
+    {id:'3-2',name:'Definer Reason Codes',tcode:'ICARC',body:'Konfigurér reason codes (ICARC). Reason codes definerer follow-up aktiviteter:<ul><li>No Follow-Ups → status 30 Matched direkte</li><li>Comment Required → bruger tilføjer kommentar → 30 Matched</li><li>With Adjustment Class → trigger automatisk variance adjustment</li><li>With Workflow Scenario → kræver godkendelse</li><li>Temporary Resolution → assignment ophæves i næste matching run</li></ul>'},
+    {id:'3-3',name:'Definer Posting Rules (auto-justering)',tcode:'',body:'Åbn app "Define Posting Rules" (App ID: F4773). Vælg scenario:<ul><li><code>SA001</code> – Adjustment Postings for Accounting</li><li><code>SC001</code> – Elimination Postings for Group Reporting</li></ul>Konfigurér Document Header, Control Options og Document Items (Item Groups med Filter By, Loop Option).<div class="step-note">Tildel regler til matchingmetoder via Customizing ICAAPT.</div>'},
+    {id:'3-4',name:'Planlæg Matching Run Jobs',tcode:'',body:'Til produktionsmiljø opsæt planlagte matching jobs:<ul><li>"Schedule Matching Run Jobs – By Company"</li><li>"Schedule Matching Run Jobs – By Consolidation Unit"</li><li>"Schedule Matching Run Jobs – General"</li></ul>Angiv: Matching Method, Filter værdier (periode, selskab), Cutoff timestamp. Resultater gemmes i <code>ICADOCM</code>.'},
+    {id:'3-5',name:'Test matching manuelt',tcode:'',body:'Åbn "Define Matching Methods" → vælg metode → Choose Run Matching. Tjek status: Active and Running → Finished. Naviger via Check Result til "Manage Matching Documents". Tjek resultater i "Manage Assignments".<div class="step-note">Item status flow: 00 New → 01 Roll-In → 20 Assigned → 30 Matched</div>'}
+  ]},
+  {id:'4',color:'#534AB7',bg:'#EEEDFE',title:'Intercompany Reconciliation',desc:'Definer reconciliation cases, teams og close process',steps:[
+    {id:'4-0',name:'Definer Reconciliation Case',tcode:'',body:'Åbn "Define Reconciliation Cases". En Reconciliation Case har 1:1 mapping til Matching Method. Konfigurér:<ul><li>Tildel Matching Method</li><li>Opret Display Groups med to sider (Leading/Partner) og filterkriterier</li><li>Tolerance settings per Display Group</li><li>Udpeg Leading Display Group (bruges til Reconciliation Status Overview)</li></ul><div class="step-note">Eksempel: Display Group 1 = AR (leading) vs AP (partner); Display Group 2 = AP vs AR → giver netting view i Reconciliation Balances.</div>'},
+    {id:'4-1',name:'Definer Org. Unit Hierarkier (valgfrit)',tcode:'',body:'Åbn "Define Organizational Unit Hierarchies" under Reconciliation Case settings. Bruges hvis kunden benytter konsolideringshierarki ud over selskabsdimension.<div class="step-note">NB: Workflow og kommunikation understøtter pt. kun company-dimension, ikke consolidation unit.</div>'},
+    {id:'4-2',name:'Konfigurér Intercompany Teams & Responsibilities',tcode:'',body:'Åbn "Manage Teams and Responsibilities – Intercompany" (App ID: F6783). Opret teams:<ul><li>Team type ICAMT til variance adjustment godkendelse</li><li>Tildel companies og matching methods under Responsibility Definitions</li><li>Roller: ICAM_SV (Godkend), ICAM_SP (Superviser), ICAM_COMM (Kommunikation)</li></ul>Sæt team status til Enabled og gem.'},
+    {id:'4-3',name:'Aktivér Reconciliation Close Process',tcode:'ICAARC',body:'Kør ICAARC. For hver Reconciliation Case konfigurér:<ul><li>Period Initially Closed: Ny periode er lukket som default</li><li>Close Prerequisite: No Prerequisite / All Items Are Assigned / All Items Are Matched</li><li>Workflow Option: No Workflow / Only When Difference Exceeds Tolerance / Only When Difference Exists / Always</li><li>Workflow Scenario ID: Pre-leverede WS78500026 (Accounting) og WS78500027 (Consolidation)</li></ul>'},
+    {id:'4-4',name:'Konfigurér Variance Adjustment Workflow (valgfrit)',tcode:'',body:'Åbn "Manage Workflows – Intercompany Variance Adjustment". Konfigurér workflow trin og modtagere baseret på teams. Standard pre-leveret workflow har "Post Variance Adjustments" som sidst trin (direkte posting efter godkendelse).'}
+  ]},
+  {id:'5',color:'#5F5E5A',bg:'#F1EFE8',title:'Drift & Løbende overvågning',desc:'Daglig brug, rapportering og vedligeholdelse',steps:[
+    {id:'5-0',name:'Daglig drift: Manage Assignments',tcode:'',body:'Primær arbejdsapp. Åbn "Manage Assignments" → vælg matchingmetode → angiv selskab → Go. Handlinger:<ul><li>Auto-Match: Kør ny matching</li><li>Assign: Manuel tildeling med reason code</li><li>Unassign: Fortryd assignment</li><li>Process: Trigger follow-up aktiviteter</li><li>Communicate: Note, notifikation, email</li></ul>'},
+    {id:'5-1',name:'Reconciliation rapportering',tcode:'',body:'To primære rapportering-apps:<ul><li>"Reconciliation Status Overview": Overblik per selskab og trading partner</li><li>"Reconciliation Balances": Detaljer AR/AP balancer. Drill-through til Manage Assignments</li></ul>Brug "Manage Reconciliation Close" til at lukke periodeafstemning og håndtere close approval workflow.'},
+    {id:'5-2',name:'Transport og data management',tcode:'',body:'Transport:<ul><li>Matching Methods: Download/Upload funktion i Define Matching Methods</li><li>Reconciliation Cases: Download/Upload i Define Reconciliation Cases</li></ul>Data Management:<ul><li>Arkivering: ICA_JOURNA</li><li>Destruktion: ICA_JOURNA_DES</li></ul>'}
+  ]}
+];
+
+// State
+let state = {
+  phases: JSON.parse(JSON.stringify(DEFAULT_PHASES)),
+  checked: {},
+  expanded: {},
+  phaseExpanded: {},
+  notes: [],
+  activePhase: 'all',
+  nextCustomId: 1000
+};
+
+// Load from localStorage
+function loadState() {
+  const saved = localStorage.getItem('icmr-tracker-v2');
+  if (saved) {
+    try {
+      const s = JSON.parse(saved);
+      if (s.checked) state.checked = s.checked;
+      if (s.expanded) state.expanded = s.expanded;
+      if (s.phaseExpanded) state.phaseExpanded = s.phaseExpanded;
+      if (s.notes) state.notes = s.notes;
+      if (s.nextCustomId) state.nextCustomId = s.nextCustomId;
+      if (s.phases) state.phases = s.phases;
+    } catch(e) {}
+  }
+}
+
+function saveState() {
+  localStorage.setItem('icmr-tracker-v2', JSON.stringify({
+    checked: state.checked,
+    expanded: state.expanded,
+    phaseExpanded: state.phaseExpanded,
+    notes: state.notes,
+    nextCustomId: state.nextCustomId,
+    phases: state.phases
+  }));
+}
+
+// Render
+function render() {
+  renderTabs();
+  renderPhases();
+  renderNotes();
+  updateProgress();
+  updatePhaseSummary();
+}
+
+function renderTabs() {
+  const container = document.getElementById('phaseTabs');
+  let html = `<button class="phase-tab ${state.activePhase==='all'?'active':''}" onclick="setPhase('all')">Alle faser</button>`;
+  state.phases.forEach(ph => {
+    html += `<button class="phase-tab ${state.activePhase===ph.id?'active':''}" onclick="setPhase('${ph.id}')">${ph.id} · ${ph.title.split(' ')[0]}</button>`;
+  });
+  container.innerHTML = html;
+}
+
+function renderPhases() {
+  const container = document.getElementById('phaseList');
+  container.innerHTML = '';
+  state.phases.forEach(ph => {
+    const isVisible = state.activePhase === 'all' || state.activePhase === ph.id;
+    const isOpen = state.phaseExpanded[ph.id] !== false;
+    const doneCount = ph.steps.filter(s => state.checked[s.id]).length;
+    const total = ph.steps.length;
+
+    const div = document.createElement('div');
+    div.className = 'phase';
+    div.style.display = isVisible ? 'block' : 'none';
+
+    let stepsHtml = '';
+    ph.steps.forEach((step, si) => {
+      const isDone = !!state.checked[step.id];
+      const isExpanded = !!state.expanded[step.id];
+      stepsHtml += `
+        <div class="step ${isDone?'done':''}" id="step-${step.id}">
+          <div class="step-header" onclick="toggleStep('${step.id}')">
+            <input class="step-cb" type="checkbox" ${isDone?'checked':''} onclick="event.stopPropagation();toggleCheck('${step.id}',this)">
+            <span class="step-num">${ph.id}.${si+1}</span>
+            <span class="step-title">${step.name}</span>
+            ${step.tcode?`<span class="step-tcode">${step.tcode}</span>`:''}
+            <button class="step-del" title="Slet step" onclick="event.stopPropagation();deleteStep('${ph.id}','${step.id}')">✕</button>
+            <span class="step-expand ${isExpanded?'open':''}">⌄</span>
+          </div>
+          <div class="step-body ${isExpanded?'open':''}">${step.body}</div>
+        </div>`;
+    });
+
+    div.innerHTML = `
+      <div class="phase-header" onclick="togglePhase('${ph.id}')">
+        <div class="phase-badge" style="background:${ph.bg};color:${ph.color}">${ph.id}</div>
+        <div class="phase-info">
+          <div class="phase-name">${ph.title}</div>
+          <div class="phase-desc">${ph.desc}</div>
+        </div>
+        <div class="phase-meta">
+          <span class="phase-count">${doneCount}/${total}</span>
+          <span class="phase-chevron ${isOpen?'open':''}">⌄</span>
+        </div>
+      </div>
+      <div id="phase-body-${ph.id}" style="display:${isOpen?'block':'none'}">
+        <div class="steps-list">${stepsHtml}</div>
+        <div class="add-step-row">
+          <button class="add-step-btn" onclick="showAddForm('${ph.id}')">+ Tilføj step</button>
+        </div>
+        <div class="add-step-form" id="add-form-${ph.id}">
+          <div class="form-row">
+            <input class="form-input" id="new-step-name-${ph.id}" placeholder="Step navn..." style="flex:2">
+            <input class="form-input" id="new-step-tcode-${ph.id}" placeholder="T-kode (valgfri)" style="flex:0.6">
+          </div>
+          <textarea class="form-textarea" id="new-step-body-${ph.id}" placeholder="Beskrivelse (valgfri)..."></textarea>
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="addStep('${ph.id}')">Tilføj</button>
+            <button class="btn btn-ghost" onclick="hideAddForm('${ph.id}')">Annuller</button>
+          </div>
+        </div>
+      </div>`;
+
+    container.appendChild(div);
+  });
+}
+
+function updateProgress() {
+  let total = 0, done = 0;
+  state.phases.forEach(ph => {
+    ph.steps.forEach(s => {
+      total++;
+      if (state.checked[s.id]) done++;
+    });
+  });
+  document.getElementById('statDone').textContent = done;
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statPct').textContent = total ? Math.round(done/total*100)+'%' : '0%';
+  document.getElementById('progFill').style.width = total ? (done/total*100)+'%' : '0%';
+}
+
+function updatePhaseSummary() {
+  const container = document.getElementById('phaseSummary');
+  let html = '';
+  state.phases.forEach(ph => {
+    const done = ph.steps.filter(s => state.checked[s.id]).length;
+    const total = ph.steps.length;
+    const pct = total ? Math.round(done/total*100) : 0;
+    html += `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border)">
+      <div style="width:20px;height:20px;border-radius:50%;background:${ph.bg};color:${ph.color};font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ph.id}</div>
+      <div style="flex:1;font-size:12px;font-weight:500;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${ph.title}</div>
+      <div style="font-size:12px;color:var(--text-hint);flex-shrink:0">${done}/${total}</div>
+      <div style="width:50px;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;flex-shrink:0">
+        <div style="width:${pct}%;height:100%;background:${ph.color};border-radius:2px"></div>
+      </div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// Interactions
+function setPhase(id) {
+  state.activePhase = id;
+  document.querySelectorAll('.phase').forEach((el,i) => {
+    el.style.display = (id === 'all' || state.phases[i]?.id === id) ? 'block' : 'none';
+  });
+  document.querySelectorAll('.phase-tab').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.phase-tab').forEach(btn => {
+    if ((id==='all' && btn.textContent.startsWith('Alle')) || btn.textContent.startsWith(id+' ·')) btn.classList.add('active');
+  });
+  saveState();
+}
+
+function togglePhase(id) {
+  const body = document.getElementById('phase-body-'+id);
+  const chevron = body.previousElementSibling.querySelector('.phase-chevron');
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if (chevron) { isOpen ? chevron.classList.remove('open') : chevron.classList.add('open'); }
+  state.phaseExpanded[id] = !isOpen;
+  saveState();
+}
+
+function toggleStep(stepId) {
+  const body = document.querySelector(`#step-${stepId} .step-body`);
+  const icon = document.querySelector(`#step-${stepId} .step-expand`);
+  const isOpen = body.classList.contains('open');
+  if (isOpen) { body.classList.remove('open'); icon.classList.remove('open'); state.expanded[stepId] = false; }
+  else { body.classList.add('open'); icon.classList.add('open'); state.expanded[stepId] = true; }
+  saveState();
+}
+
+function toggleCheck(stepId, cb) {
+  state.checked[stepId] = cb.checked;
+  const stepEl = document.getElementById('step-'+stepId);
+  if (stepEl) { cb.checked ? stepEl.classList.add('done') : stepEl.classList.remove('done'); }
+  const titleEl = stepEl?.querySelector('.step-title');
+  if (titleEl) { /* handled by CSS */ }
+  updateProgress();
+  updatePhaseSummary();
+  saveState();
+  showToast(cb.checked ? '✅ Markeret som udført' : '↩ Markering fjernet');
+}
+
+function showAddForm(phaseId) {
+  document.getElementById('add-form-'+phaseId).classList.add('open');
+  document.getElementById('new-step-name-'+phaseId).focus();
+}
+
+function hideAddForm(phaseId) {
+  document.getElementById('add-form-'+phaseId).classList.remove('open');
+  document.getElementById('new-step-name-'+phaseId).value = '';
+  document.getElementById('new-step-tcode-'+phaseId).value = '';
+  document.getElementById('new-step-body-'+phaseId).value = '';
+}
+
+function addStep(phaseId) {
+  const name = document.getElementById('new-step-name-'+phaseId).value.trim();
+  if (!name) { document.getElementById('new-step-name-'+phaseId).focus(); return; }
+  const tcode = document.getElementById('new-step-tcode-'+phaseId).value.trim();
+  const body = document.getElementById('new-step-body-'+phaseId).value.trim();
+  const phase = state.phases.find(p => p.id === phaseId);
+  if (!phase) return;
+  const newId = phaseId + '-custom-' + (state.nextCustomId++);
+  phase.steps.push({ id: newId, name, tcode, body: body || '(Ingen beskrivelse tilføjet)' });
+  saveState();
+  render();
+  hideAddForm(phaseId);
+  showToast('➕ Step tilføjet');
+}
+
+function deleteStep(phaseId, stepId) {
+  if (!confirm('Slet dette step?')) return;
+  const phase = state.phases.find(p => p.id === phaseId);
+  if (!phase) return;
+  phase.steps = phase.steps.filter(s => s.id !== stepId);
+  delete state.checked[stepId];
+  delete state.expanded[stepId];
+  saveState();
+  render();
+  showToast('🗑 Step slettet');
+}
+
+// Notes
+let currentNoteType = 'todo';
+
+function toggleNoteForm() {
+  const form = document.getElementById('noteForm');
+  form.classList.toggle('open');
+  if (form.classList.contains('open')) document.getElementById('noteText').focus();
+}
+
+function selectNoteType(type, btn) {
+  currentNoteType = type;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function addNote() {
+  const text = document.getElementById('noteText').value.trim();
+  if (!text) return;
+  state.notes.unshift({
+    id: Date.now(),
+    type: currentNoteType,
+    text,
+    date: new Date().toLocaleDateString('da-DK', {day:'numeric',month:'short',year:'numeric'})
+  });
+  document.getElementById('noteText').value = '';
+  document.getElementById('noteForm').classList.remove('open');
+  saveState();
+  renderNotes();
+  showToast('📝 Note gemt');
+}
+
+function deleteNote(id) {
+  state.notes = state.notes.filter(n => n.id !== id);
+  saveState();
+  renderNotes();
+}
+
+function markNoteType(id, type) {
+  const note = state.notes.find(n => n.id === id);
+  if (note) { note.type = type; saveState(); renderNotes(); }
+}
+
+function renderNotes() {
+  const list = document.getElementById('notesList');
+  const empty = document.getElementById('notesEmpty');
+  if (!state.notes.length) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  const typeLabel = { todo:'To-do', issue:'Afklares', note:'Note', done:'Udført' };
+  const typeBadge = { todo:'badge-todo', issue:'badge-issue', note:'badge-note', done:'badge-done' };
+  list.innerHTML = state.notes.map(n => `
+    <div class="note-item type-${n.type}">
+      <div class="note-header">
+        <span class="note-type-badge ${typeBadge[n.type]}">${typeLabel[n.type]}</span>
+      </div>
+      <div class="note-text">${n.text.replace(/\n/g,'<br>')}</div>
+      <div class="note-date">${n.date}</div>
+      <div class="note-actions">
+        ${n.type!=='done'?`<button class="btn btn-ghost" style="font-size:11px;padding:3px 8px" onclick="markNoteType(${n.id},'done')">✓ Markér udført</button>`:''}
+        <button class="btn btn-danger" onclick="deleteNote(${n.id})">Slet</button>
+      </div>
+    </div>`).join('');
+}
+
+// Export/Import
+function exportData() {
+  const blob = new Blob([JSON.stringify({
+    exportDate: new Date().toISOString(),
+    version: 2,
+    checked: state.checked,
+    notes: state.notes,
+    phases: state.phases,
+    nextCustomId: state.nextCustomId
+  }, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'icmr-tracker-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  showToast('💾 Backup gemt');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.checked) state.checked = data.checked;
+      if (data.notes) state.notes = data.notes;
+      if (data.phases) state.phases = data.phases;
+      if (data.nextCustomId) state.nextCustomId = data.nextCustomId;
+      saveState();
+      render();
+      showToast('⬆ Data indlæst fra backup');
+    } catch(err) { alert('Fejl ved indlæsning af fil.'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// Toast
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// Init
+loadState();
+render();
+</script>
+</body>
+</html>
