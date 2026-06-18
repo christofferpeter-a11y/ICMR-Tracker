@@ -127,6 +127,27 @@
   .step-body code { font-family: var(--font-mono); font-size: 11px; background: var(--gray-100); border: var(--border); padding: 1px 4px; color: var(--black); }
   .step-note { background: var(--gray-100); border-left: 2px solid var(--black); padding: 8px 10px; margin-top: 10px; font-size: 11px; color: var(--gray-800); line-height: 1.5; }
 
+  /* ── SUB-STEPS ── */
+  .substeps-list { display: flex; flex-direction: column; gap: 1px; margin-top: 10px; border-top: var(--border); padding-top: 8px; }
+  .substep { border: var(--border); background: var(--white); }
+  .substep.done .substep-title { text-decoration: line-through; color: var(--gray-400); }
+  .substep-header { display: flex; align-items: center; gap: 8px; padding: 6px 10px; cursor: default; }
+  .substep-cb { width: 13px; height: 13px; flex-shrink: 0; cursor: pointer; accent-color: var(--black); }
+  .substep-num { font-size: 10px; font-weight: 700; color: var(--gray-500); flex-shrink: 0; letter-spacing: 0.05em; min-width: 34px; }
+  .substep-title { flex: 1; font-size: 12px; color: var(--black); }
+  .substep-tcode { font-size: 10px; font-weight: 600; background: var(--gray-100); border: var(--border); padding: 1px 5px; color: var(--gray-600); letter-spacing: 0.04em; }
+  .substep-edit { background: none; border: none; cursor: pointer; font-size: 12px; color: var(--gray-400); padding: 2px 4px; }
+  .substep-edit:hover { color: var(--black); }
+  .substep-del { background: none; border: none; cursor: pointer; font-size: 10px; color: var(--gray-400); padding: 2px 4px; }
+  .substep-del:hover { color: var(--issue-red); }
+  .substep-edit-form { display: none; padding: 8px 10px; border-top: var(--border); background: var(--gray-100); }
+  .substep-edit-form.open { display: block; }
+  .add-substep-row { margin-top: 8px; }
+  .add-substep-btn { width: 100%; padding: 5px 10px; border: 1px dashed var(--gray-400); background: transparent; cursor: pointer; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-500); display: flex; align-items: center; gap: 4px; transition: all 0.12s; }
+  .add-substep-btn:hover { border-color: var(--black); color: var(--black); }
+  .add-substep-form { background: var(--gray-100); border: var(--border); padding: 10px 12px; margin-top: 4px; display: none; }
+  .add-substep-form.open { display: block; }
+
   .add-step-row { padding: 4px 6px; }
   .add-step-btn { width: 100%; padding: 8px 12px; border: 1px dashed var(--gray-400); background: transparent; cursor: pointer; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-600); display: flex; align-items: center; gap: 6px; transition: all 0.12s; }
   .add-step-btn:hover { border-color: var(--black); color: var(--black); }
@@ -582,7 +603,8 @@ function renderPhases() {
   state.phases.forEach(ph => {
     const isVisible = state.activePhase === 'all' || state.activePhase === ph.id;
     const isOpen = state.phaseExpanded[ph.id] !== false;
-    const doneCount = ph.steps.filter(s => state.checked[s.id]).length;
+    let doneCount = 0, totalCount = 0;
+    ph.steps.forEach(s => { totalCount++; if (state.checked[s.id]) doneCount++; (s.subSteps||[]).forEach(ss => { totalCount++; if (state.checked[ss.id]) doneCount++; }); });
     let stepsHtml = '';
     // Insert-at-top button
     stepsHtml += `
@@ -606,7 +628,53 @@ function renderPhases() {
             <button class="step-del" onclick="event.stopPropagation();deleteStep('${ph.id}','${step.id}')">✕</button>
             <span class="step-expand ${isExpanded?'open':''}">⌄</span>
           </div>
-          <div class="step-body ${isExpanded?'open':''}">${step.body}</div>
+          <div class="step-body ${isExpanded?'open':''}">
+            ${step.body ? `<div class="step-desc">${step.body}</div>` : ''}
+            ${(()=>{
+              const subs = step.subSteps || [];
+              let subsHtml = subs.length ? '<div class="substeps-list">' : '';
+              subs.forEach((ss, ssi) => {
+                const ssDone = !!state.checked[ss.id];
+                subsHtml += `
+                  <div class="substep ${ssDone?'done':''}" id="substep-${ss.id}">
+                    <div class="substep-header">
+                      <input class="substep-cb" type="checkbox" ${ssDone?'checked':''} onclick="toggleSubStepCheck('${ss.id}',this)">
+                      <span class="substep-num">${ph.id}.${si+1}.${ssi+1}</span>
+                      <span class="substep-title">${escHtml(ss.name)}</span>
+                      ${ss.tcode?`<span class="substep-tcode">${escHtml(ss.tcode)}</span>`:''}
+                      <button class="substep-edit" title="Redigér" onclick="toggleEditSubStep('${ph.id}','${step.id}','${ss.id}')">✎</button>
+                      <button class="substep-del" onclick="deleteSubStep('${ph.id}','${step.id}','${ss.id}')">✕</button>
+                    </div>
+                    <div class="substep-edit-form" id="ss-edit-${ss.id}">
+                      <div class="form-row">
+                        <input class="form-input" id="ss-name-${ss.id}" value="${escAttr(ss.name)}" placeholder="Underpunkt navn..." style="flex:2;font-size:12px;padding:6px 8px">
+                        <input class="form-input" id="ss-tcode-${ss.id}" value="${escAttr(ss.tcode||'')}" placeholder="T-kode" style="flex:0.6;font-size:12px;padding:6px 8px">
+                      </div>
+                      <div class="form-actions">
+                        <button class="btn btn-primary" style="font-size:10px;padding:5px 12px" onclick="saveEditSubStep('${ph.id}','${step.id}','${ss.id}')">Gem</button>
+                        <button class="btn btn-ghost" style="font-size:10px;padding:5px 12px" onclick="toggleEditSubStep('${ph.id}','${step.id}','${ss.id}')">Annuller</button>
+                      </div>
+                    </div>
+                  </div>`;
+              });
+              if (subs.length) subsHtml += '</div>';
+              subsHtml += `
+                <div class="add-substep-row">
+                  <button class="add-substep-btn" onclick="showAddSubStepForm('${ph.id}','${step.id}')">＋ Tilføj underpunkt</button>
+                </div>
+                <div class="add-substep-form" id="add-substep-form-${step.id}">
+                  <div class="form-row">
+                    <input class="form-input" id="ss-new-name-${step.id}" placeholder="Underpunkt navn..." style="flex:2;font-size:12px;padding:6px 8px">
+                    <input class="form-input" id="ss-new-tcode-${step.id}" placeholder="T-kode" style="flex:0.6;font-size:12px;padding:6px 8px">
+                  </div>
+                  <div class="form-actions">
+                    <button class="btn btn-primary" style="font-size:10px;padding:5px 12px" onclick="addSubStep('${ph.id}','${step.id}')">Tilføj</button>
+                    <button class="btn btn-ghost" style="font-size:10px;padding:5px 12px" onclick="hideAddSubStepForm('${step.id}')">Annuller</button>
+                  </div>
+                </div>`;
+              return subsHtml;
+            })()}
+          </div>
           <div class="step-edit-form" id="edit-form-${step.id}">
             <div class="form-row">
               <input class="form-input" id="edit-name-${step.id}" value="${escAttr(step.name)}" placeholder="Step navn..." style="flex:2">
@@ -636,7 +704,7 @@ function renderPhases() {
           <div class="phase-desc">${ph.desc}</div>
         </div>
         <div class="phase-meta">
-          <span class="phase-count">${doneCount}/${ph.steps.length}</span>
+          <span class="phase-count">${doneCount}/${totalCount}</span>
           <span class="phase-chevron ${isOpen?'open':''}">⌄</span>
         </div>
       </div>
@@ -663,7 +731,10 @@ function renderPhases() {
 
 function updateProgress() {
   let total = 0, done = 0;
-  state.phases.forEach(ph => ph.steps.forEach(s => { total++; if (state.checked[s.id]) done++; }));
+  state.phases.forEach(ph => ph.steps.forEach(s => {
+    total++; if (state.checked[s.id]) done++;
+    (s.subSteps||[]).forEach(ss => { total++; if (state.checked[ss.id]) done++; });
+  }));
   document.getElementById('statDone').textContent = done;
   document.getElementById('statTotal').textContent = total;
   document.getElementById('statPct').textContent = total ? Math.round(done/total*100)+'%' : '0%';
@@ -672,8 +743,8 @@ function updateProgress() {
 
 function updatePhaseSummary() {
   document.getElementById('phaseSummary').innerHTML = state.phases.map(ph => {
-    const done = ph.steps.filter(s => state.checked[s.id]).length;
-    const total = ph.steps.length;
+    let done = 0, total = 0;
+    ph.steps.forEach(s => { total++; if (state.checked[s.id]) done++; (s.subSteps||[]).forEach(ss => { total++; if (state.checked[ss.id]) done++; }); });
     const pct = total ? Math.round(done/total*100) : 0;
     return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--gray-200)">
       <div style="width:22px;height:22px;background:${ph.bg};color:${ph.color};font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ph.id}</div>
@@ -777,6 +848,63 @@ function insertStep(phaseId, pos) {
   const ph = state.phases.find(p => p.id===phaseId); if (!ph) return;
   ph.steps.splice(pos, 0, { id: phaseId+'-c-'+(state.nextCustomId++), name, tcode, body: body||'(Ingen beskrivelse)' });
   scheduleSave(); render(); showToast('Step indsat');
+}
+
+// ── Sub-steps ──
+function toggleSubStepCheck(subStepId, el) {
+  state.checked[subStepId] = el.checked;
+  const el2 = document.getElementById('substep-'+subStepId);
+  if (el2) { if (el.checked) el2.classList.add('done'); else el2.classList.remove('done'); }
+  scheduleSave();
+}
+
+function showAddSubStepForm(phaseId, stepId) {
+  document.querySelectorAll('.add-substep-form.open').forEach(f => f.classList.remove('open'));
+  const f = document.getElementById('add-substep-form-'+stepId);
+  if (f) { f.classList.add('open'); f.querySelector('input')?.focus(); }
+}
+function hideAddSubStepForm(stepId) {
+  const f = document.getElementById('add-substep-form-'+stepId);
+  if (f) f.classList.remove('open');
+}
+
+function addSubStep(phaseId, stepId) {
+  const name = document.getElementById('ss-new-name-'+stepId)?.value.trim();
+  if (!name) return;
+  const tcode = document.getElementById('ss-new-tcode-'+stepId)?.value.trim() || '';
+  const ph = state.phases.find(p => p.id===phaseId); if (!ph) return;
+  const step = ph.steps.find(s => s.id===stepId); if (!step) return;
+  if (!step.subSteps) step.subSteps = [];
+  step.subSteps.push({ id: stepId+'-ss-'+(state.nextCustomId++), name, tcode });
+  scheduleSave(); render(); showToast('Underpunkt tilføjet');
+}
+
+function deleteSubStep(phaseId, stepId, subStepId) {
+  if (!confirm('Slet dette underpunkt?')) return;
+  const ph = state.phases.find(p => p.id===phaseId); if (!ph) return;
+  const step = ph.steps.find(s => s.id===stepId); if (!step) return;
+  step.subSteps = (step.subSteps||[]).filter(ss => ss.id!==subStepId);
+  delete state.checked[subStepId];
+  scheduleSave(); render(); showToast('Underpunkt slettet');
+}
+
+function toggleEditSubStep(phaseId, stepId, subStepId) {
+  const form = document.getElementById('ss-edit-'+subStepId);
+  if (!form) return;
+  const isOpen = form.classList.contains('open');
+  document.querySelectorAll('.substep-edit-form.open').forEach(f => f.classList.remove('open'));
+  if (!isOpen) form.classList.add('open');
+}
+
+function saveEditSubStep(phaseId, stepId, subStepId) {
+  const ph = state.phases.find(p => p.id===phaseId); if (!ph) return;
+  const step = ph.steps.find(s => s.id===stepId); if (!step) return;
+  const ss = (step.subSteps||[]).find(x => x.id===subStepId); if (!ss) return;
+  const name = document.getElementById('ss-name-'+subStepId)?.value.trim();
+  if (!name) return;
+  ss.name = name;
+  ss.tcode = document.getElementById('ss-tcode-'+subStepId)?.value.trim() || '';
+  scheduleSave(); render(); showToast('Underpunkt opdateret');
 }
 
 // ── Notes ──
