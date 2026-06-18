@@ -218,6 +218,48 @@
   .notes-empty { text-align: center; padding: 56px 24px; color: var(--gray-400); font-size: 13px; border: var(--border); background: var(--white); }
   .notes-empty-icon { font-size: 32px; margin-bottom: 12px; }
 
+  /* ── TEST LOG ── */
+  .testlog-page { max-width: 1280px; margin: 0 auto; padding: 1.5rem 2rem; }
+  .testlog-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1rem; border-bottom: var(--border-strong); padding-bottom: 1rem; }
+  .testlog-title { font-size: 20px; font-weight: 700; }
+  .testlog-actions { display: flex; gap: 8px; align-items: center; }
+  .testlog-filter { padding: 6px 10px; font-size: 12px; border: var(--border); background: var(--white); color: var(--black); font-family: var(--font); width: 180px; }
+  .testlog-filter:focus { outline: none; border-color: var(--black); }
+
+  .tl-table-wrap { overflow-x: auto; border: var(--border-strong); background: var(--white); }
+  .tl-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tl-table thead { background: var(--black); color: var(--white); }
+  .tl-table thead th { padding: 10px 12px; text-align: left; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.1); }
+  .tl-table thead th:last-child { border-right: none; }
+  .tl-table tbody tr { border-bottom: var(--border); transition: background 0.1s; }
+  .tl-table tbody tr:hover { background: #fafafa; }
+  .tl-table tbody tr.tl-row-green { border-left: 3px solid #2e7d32; }
+  .tl-table tbody tr.tl-row-amber { border-left: 3px solid #b45309; }
+  .tl-table tbody tr.tl-row-red { border-left: 3px solid #991b1b; }
+  .tl-table tbody tr.tl-row-blue { border-left: 3px solid #1e3a5f; }
+  .tl-table td { padding: 0; vertical-align: top; border-right: var(--border); position: relative; }
+  .tl-table td:last-child { border-right: none; }
+  .tl-num { padding: 10px 10px; font-size: 11px; color: var(--gray-400); font-family: var(--font-mono); text-align: center; min-width: 36px; white-space: nowrap; }
+
+  .tl-cell { min-height: 40px; padding: 10px 12px; outline: none; white-space: pre-wrap; word-break: break-word; line-height: 1.5; cursor: text; }
+  .tl-cell:focus { background: #fffff0; outline: 2px solid var(--black); outline-offset: -2px; }
+  .tl-cell.tl-compact { min-width: 80px; max-width: 120px; }
+  .tl-cell.tl-wide { min-width: 260px; }
+
+  .tl-color-btn { display: flex; align-items: center; justify-content: center; padding: 10px 8px; cursor: pointer; background: none; border: none; font-size: 14px; min-width: 36px; }
+  .tl-color-btn:hover { background: var(--gray-100); }
+  .tl-del-btn { display: flex; align-items: center; justify-content: center; padding: 10px 8px; cursor: pointer; background: none; border: none; font-size: 13px; color: var(--gray-400); min-width: 36px; }
+  .tl-del-btn:hover { color: var(--issue-red); background: #fef2f2; }
+
+  .tl-add-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-top: var(--border); background: var(--gray-100); cursor: pointer; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-600); transition: all 0.12s; width: 100%; text-align: left; }
+  .tl-add-row:hover { background: var(--white); color: var(--black); }
+
+  .tl-empty { text-align: center; padding: 56px 24px; color: var(--gray-400); font-size: 13px; }
+
+  .tl-legend { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+  .tl-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--gray-600); cursor: pointer; }
+  .tl-legend-dot { width: 10px; height: 10px; flex-shrink: 0; }
+
   /* Toast */
   .toast { position: fixed; bottom: 24px; right: 24px; background: var(--black); color: var(--white); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; padding: 10px 18px; opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none; z-index: 999; }
   .toast.show { opacity: 1; transform: translateY(0); }
@@ -250,6 +292,7 @@
 <div class="main-tabs">
   <button class="main-tab active" id="tab-tracker" onclick="switchMainTab('tracker')">Tracker</button>
   <button class="main-tab" id="tab-notes" onclick="switchMainTab('notes')">Noter & To-do <span class="main-tab-badge" id="todoCount" style="display:none"></span></button>
+  <button class="main-tab" id="tab-testlog" onclick="switchMainTab('testlog')">Test Log</button>
 </div>
 
 <!-- Tracker page -->
@@ -327,6 +370,48 @@
   </div>
 </div>
 
+<!-- Test Log page -->
+<div class="page" id="page-testlog">
+  <div class="testlog-page">
+    <div class="testlog-header">
+      <span class="testlog-title">Test Log</span>
+      <div class="testlog-actions">
+        <input class="testlog-filter" id="tlFilter" placeholder="Søg i alle felter..." oninput="renderTestLog()">
+        <button class="btn btn-primary" onclick="addTestRow()">+ Tilføj række</button>
+      </div>
+    </div>
+
+    <div class="tl-table-wrap">
+      <table class="tl-table">
+        <thead>
+          <tr>
+            <th style="width:36px">#</th>
+            <th>Company Code A</th>
+            <th>Company Code B</th>
+            <th>Fiscal Period</th>
+            <th>Fiscal Year</th>
+            <th style="width:40%">Status</th>
+            <th style="width:36px" title="Farvemærke">●</th>
+            <th style="width:36px"></th>
+          </tr>
+        </thead>
+        <tbody id="tlBody"></tbody>
+      </table>
+      <button class="tl-add-row" onclick="addTestRow()">+ Tilføj ny række</button>
+    </div>
+    <div id="tlEmpty" class="tl-empty hidden">Ingen rækker endnu — klik "+ Tilføj række" for at starte</div>
+
+    <div class="tl-legend">
+      <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--gray-600);margin-right:4px">Farvemærke:</span>
+      <span class="tl-legend-item"><span class="tl-legend-dot" style="background:#2e7d32"></span> Godkendt</span>
+      <span class="tl-legend-item"><span class="tl-legend-dot" style="background:#b45309"></span> Afventer</span>
+      <span class="tl-legend-item"><span class="tl-legend-dot" style="background:#991b1b"></span> Problem</span>
+      <span class="tl-legend-item"><span class="tl-legend-dot" style="background:#1e3a5f"></span> Spørgsmål</span>
+      <span class="tl-legend-item"><span class="tl-legend-dot" style="background:var(--gray-400)"></span> Ingen</span>
+    </div>
+  </div>
+</div>
+
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
   <img id="lightboxImg" src="" alt="Billede">
@@ -374,7 +459,7 @@ const DEFAULT_PHASES = [
 
 let state = {
   phases: JSON.parse(JSON.stringify(DEFAULT_PHASES)),
-  checked: {}, notes: [], phaseExpanded: {}, expanded: {}, nextCustomId: 1000, activePhase: 'all'
+  checked: {}, notes: [], testLog: [], phaseExpanded: {}, expanded: {}, nextCustomId: 1000, activePhase: 'all'
 };
 let isSaving = false, pendingSave = false;
 let currentNoteType = 'todo', pendingImages = [], currentNoteFilter = 'all';
@@ -394,7 +479,7 @@ async function cloudPut(data) {
   return await res.json();
 }
 function buildPayload() {
-  return { checked: state.checked, notes: state.notes, phases: state.phases, nextCustomId: state.nextCustomId, phaseExpanded: state.phaseExpanded };
+  return { checked: state.checked, notes: state.notes, testLog: state.testLog, phases: state.phases, nextCustomId: state.nextCustomId, phaseExpanded: state.phaseExpanded };
 }
 
 // Compress image to JPEG, max 700px wide, quality 0.45 → ~20-40KB per image
@@ -419,6 +504,7 @@ function mergeRemote(remote) {
   let changed = false;
   if (remote.checked && JSON.stringify(remote.checked) !== JSON.stringify(state.checked)) { state.checked = remote.checked; changed = true; }
   if (remote.notes && JSON.stringify(remote.notes) !== JSON.stringify(state.notes)) { state.notes = remote.notes; changed = true; }
+  if (remote.testLog && JSON.stringify(remote.testLog) !== JSON.stringify(state.testLog)) { state.testLog = remote.testLog; changed = true; }
   if (remote.phases && remote.phases.length > 0 && JSON.stringify(remote.phases) !== JSON.stringify(state.phases)) { state.phases = remote.phases; changed = true; }
   if (remote.nextCustomId) state.nextCustomId = remote.nextCustomId;
   if (remote.phaseExpanded) state.phaseExpanded = remote.phaseExpanded;
@@ -450,7 +536,7 @@ async function scheduleSave() {
   if (pendingSave) { pendingSave = false; scheduleSave(); }
 }
 
-function render() { renderTabs(); renderPhases(); renderNotes(); updateProgress(); updatePhaseSummary(); updateTodoBadge(); }
+function render() { renderTabs(); renderPhases(); renderNotes(); renderTestLog(); updateProgress(); updatePhaseSummary(); updateTodoBadge(); }
 
 function switchMainTab(tab) {
   document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
@@ -809,6 +895,137 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── TEST LOG ──
+const TL_COLORS = ['', 'green', 'amber', 'red', 'blue'];
+const TL_COLOR_ICONS = { '': '○', green: '●', amber: '●', red: '●', blue: '●' };
+const TL_COLOR_STYLES = { '': 'color:var(--gray-400)', green: 'color:#2e7d32', amber: 'color:#b45309', red: 'color:#991b1b', blue: 'color:#1e3a5f' };
+
+function addTestRow() {
+  const row = { id: Date.now(), compA: '', compB: '', period: '', year: '', status: '', color: '' };
+  state.testLog.push(row);
+  scheduleSave();
+  renderTestLog();
+  // Focus first cell of new row
+  setTimeout(() => {
+    const cell = document.querySelector(`[data-tl-id="${row.id}"][data-tl-field="compA"]`);
+    if (cell) { cell.focus(); placeCursorAtEnd(cell); }
+  }, 50);
+}
+
+function deleteTestRow(id) {
+  if (!confirm('Slet denne række?')) return;
+  state.testLog = state.testLog.filter(r => r.id !== id);
+  scheduleSave(); renderTestLog(); showToast('Række slettet');
+}
+
+function cycleRowColor(id) {
+  const row = state.testLog.find(r => r.id === id);
+  if (!row) return;
+  const idx = TL_COLORS.indexOf(row.color || '');
+  row.color = TL_COLORS[(idx + 1) % TL_COLORS.length];
+  scheduleSave(); renderTestLog();
+}
+
+function onTlBlur(id, field, el) {
+  const row = state.testLog.find(r => r.id === id);
+  if (!row) return;
+  const val = el.innerText.trim();
+  if (row[field] !== val) { row[field] = val; scheduleSave(); }
+}
+
+function onTlKeydown(e, id, field, el) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const fields = ['compA', 'compB', 'period', 'year', 'status'];
+    const idx = fields.indexOf(field);
+    if (e.shiftKey) {
+      if (idx > 0) focusTlCell(id, fields[idx - 1]);
+    } else {
+      if (idx < fields.length - 1) { focusTlCell(id, fields[idx + 1]); }
+      else {
+        // Tab from last field → next row or new row
+        const rowIdx = state.testLog.findIndex(r => r.id === id);
+        if (rowIdx < state.testLog.length - 1) { focusTlCell(state.testLog[rowIdx + 1].id, 'compA'); }
+        else { addTestRow(); }
+      }
+    }
+  }
+  if (e.key === 'Enter' && !e.shiftKey && field !== 'status') {
+    e.preventDefault();
+    const rowIdx = state.testLog.findIndex(r => r.id === id);
+    if (rowIdx < state.testLog.length - 1) { focusTlCell(state.testLog[rowIdx + 1].id, field); }
+    else { addTestRow(); }
+  }
+}
+
+function focusTlCell(id, field) {
+  const cell = document.querySelector(`[data-tl-id="${id}"][data-tl-field="${field}"]`);
+  if (cell) { cell.focus(); placeCursorAtEnd(cell); }
+}
+
+function placeCursorAtEnd(el) {
+  const range = document.createRange();
+  const sel = window.getSelection();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function renderTestLog() {
+  const body = document.getElementById('tlBody');
+  const empty = document.getElementById('tlEmpty');
+  if (!body) return;
+
+  const q = (document.getElementById('tlFilter')?.value || '').toLowerCase();
+  const rows = q
+    ? state.testLog.filter(r => [r.compA, r.compB, r.period, r.year, r.status].join(' ').toLowerCase().includes(q))
+    : state.testLog;
+
+  if (!rows.length) {
+    body.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  body.innerHTML = rows.map((row, i) => {
+    const colorClass = row.color ? `tl-row-${row.color}` : '';
+    const icon = TL_COLOR_ICONS[row.color || ''];
+    const iconStyle = TL_COLOR_STYLES[row.color || ''];
+    return `<tr class="${colorClass}" id="tlrow-${row.id}">
+      <td><div class="tl-num">${i + 1}</div></td>
+      <td><div class="tl-cell tl-compact" contenteditable="true"
+        data-tl-id="${row.id}" data-tl-field="compA"
+        onblur="onTlBlur(${row.id},'compA',this)"
+        onkeydown="onTlKeydown(event,${row.id},'compA',this)"
+        >${escHtml(row.compA)}</div></td>
+      <td><div class="tl-cell tl-compact" contenteditable="true"
+        data-tl-id="${row.id}" data-tl-field="compB"
+        onblur="onTlBlur(${row.id},'compB',this)"
+        onkeydown="onTlKeydown(event,${row.id},'compB',this)"
+        >${escHtml(row.compB)}</div></td>
+      <td><div class="tl-cell tl-compact" contenteditable="true"
+        data-tl-id="${row.id}" data-tl-field="period"
+        onblur="onTlBlur(${row.id},'period',this)"
+        onkeydown="onTlKeydown(event,${row.id},'period',this)"
+        >${escHtml(row.period)}</div></td>
+      <td><div class="tl-cell tl-compact" contenteditable="true"
+        data-tl-id="${row.id}" data-tl-field="year"
+        onblur="onTlBlur(${row.id},'year',this)"
+        onkeydown="onTlKeydown(event,${row.id},'year',this)"
+        >${escHtml(row.year)}</div></td>
+      <td><div class="tl-cell tl-wide" contenteditable="true"
+        data-tl-id="${row.id}" data-tl-field="status"
+        onblur="onTlBlur(${row.id},'status',this)"
+        onkeydown="onTlKeydown(event,${row.id},'status',this)"
+        >${escHtml(row.status)}</div></td>
+      <td><button class="tl-color-btn" style="${iconStyle}" title="Skift farvemærke" onclick="cycleRowColor(${row.id})">${icon}</button></td>
+      <td><button class="tl-del-btn" title="Slet række" onclick="deleteTestRow(${row.id})">✕</button></td>
+    </tr>`;
+  }).join('');
 }
 
 initialLoad();
