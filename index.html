@@ -35,6 +35,13 @@
   .sync-dot.error { background: var(--coral); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
+  /* Main tab navigation */
+  .main-tabs { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; gap: 0; }
+  .main-tab { padding: 12px 20px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border: none; background: transparent; border-bottom: 2.5px solid transparent; transition: all 0.15s; display: flex; align-items: center; gap: 7px; }
+  .main-tab:hover { color: var(--blue); }
+  .main-tab.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 600; }
+  .main-tab-badge { background: var(--amber-light); color: var(--amber); font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; }
+
   .progress-wrap { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 2rem; display: flex; align-items: center; gap: 20px; }
   .progress-track { flex: 1; height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
   .progress-fill { height: 100%; background: var(--blue); border-radius: 3px; transition: width 0.4s; }
@@ -42,6 +49,10 @@
   .pstat { text-align: center; }
   .pstat-val { font-size: 18px; font-weight: 600; }
   .pstat-lbl { font-size: 11px; color: var(--text-hint); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* Tracker page */
+  .page { display: none; }
+  .page.active { display: block; }
 
   .layout { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; max-width: 1300px; margin: 0 auto; padding: 1.5rem 2rem; align-items: start; }
   @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
@@ -109,23 +120,19 @@
   .card-title { font-size: 13px; font-weight: 600; }
   .card-body { padding: 12px 16px; }
 
-  .notes-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
-  .note-item { background: var(--surface2); border-radius: var(--radius-sm); padding: 10px 12px; border-left: 3px solid var(--border-strong); }
-  .note-item.type-todo { border-color: var(--amber); }
-  .note-item.type-issue { border-color: var(--coral); }
-  .note-item.type-note { border-color: var(--blue); }
-  .note-item.type-done { border-color: #2e9e6b; opacity: 0.6; }
-  .note-type-badge { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 1px 6px; border-radius: 10px; }
-  .badge-todo { background: var(--amber-light); color: var(--amber); }
-  .badge-issue { background: var(--coral-light); color: var(--coral); }
-  .badge-note { background: var(--blue-light); color: var(--blue); }
-  .badge-done { background: var(--green-light); color: var(--green); }
-  .note-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
-  .note-date { font-size: 11px; color: var(--text-hint); margin-top: 4px; }
-  .note-actions { display: flex; gap: 4px; margin-top: 6px; }
-  .note-form { display: none; padding-top: 10px; border-top: 1px solid var(--border); }
-  .note-form.open { display: block; }
-  .note-type-row { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  /* Notes page */
+  .notes-page { max-width: 900px; margin: 0 auto; padding: 1.5rem 2rem; }
+  .notes-page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+  .notes-page-title { font-size: 18px; font-weight: 600; }
+  .notes-filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .filter-btn { font-size: 12px; padding: 4px 12px; border: 1px solid var(--border-strong); border-radius: 20px; background: var(--surface); cursor: pointer; color: var(--text-secondary); font-weight: 500; transition: all 0.15s; }
+  .filter-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .filter-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+  /* Note form (full page) */
+  .note-add-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 1.25rem; display: none; }
+  .note-add-form.open { display: block; }
+  .note-type-row { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
   .type-btn { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; cursor: pointer; border: 1px solid; transition: all 0.15s; }
   .type-btn[data-type="todo"] { color: var(--amber); border-color: var(--amber); }
   .type-btn[data-type="issue"] { color: var(--coral); border-color: var(--coral); }
@@ -133,6 +140,45 @@
   .type-btn.selected[data-type="todo"] { background: var(--amber-light); }
   .type-btn.selected[data-type="issue"] { background: var(--coral-light); }
   .type-btn.selected[data-type="note"] { background: var(--blue-light); }
+
+  /* Image upload */
+  .img-upload-area { border: 1.5px dashed var(--border-strong); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 10px; cursor: pointer; transition: all 0.15s; background: var(--surface2); display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-hint); }
+  .img-upload-area:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+  .img-upload-area input[type="file"] { display: none; }
+  .img-preview-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .img-thumb-wrap { position: relative; display: inline-block; }
+  .img-thumb { width: 72px; height: 72px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  .img-thumb-del { position: absolute; top: -5px; right: -5px; background: var(--coral); color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
+
+  /* Notes grid */
+  .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .note-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; border-top: 3px solid var(--border-strong); }
+  .note-card.type-todo { border-top-color: var(--amber); }
+  .note-card.type-issue { border-top-color: var(--coral); }
+  .note-card.type-note { border-top-color: var(--blue); }
+  .note-card.type-done { border-top-color: #2e9e6b; opacity: 0.65; }
+  .note-card-body { padding: 14px 16px; }
+  .note-type-badge { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 1px 6px; border-radius: 10px; display: inline-block; margin-bottom: 6px; }
+  .badge-todo { background: var(--amber-light); color: var(--amber); }
+  .badge-issue { background: var(--coral-light); color: var(--coral); }
+  .badge-note { background: var(--blue-light); color: var(--blue); }
+  .badge-done { background: var(--green-light); color: var(--green); }
+  .note-text { font-size: 13px; color: var(--text-secondary); line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+  .note-date { font-size: 11px; color: var(--text-hint); margin-top: 8px; }
+  .note-images { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .note-img { width: 80px; height: 80px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border); cursor: pointer; transition: opacity 0.15s; }
+  .note-img:hover { opacity: 0.85; }
+  .note-actions { padding: 8px 16px 12px; display: flex; gap: 6px; border-top: 1px solid var(--border); }
+
+  /* Lightbox */
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.82); display: none; align-items: center; justify-content: center; z-index: 900; padding: 20px; }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 100%; max-height: 90vh; border-radius: var(--radius); object-fit: contain; }
+  .lightbox-close { position: absolute; top: 16px; right: 20px; color: white; font-size: 28px; cursor: pointer; background: none; border: none; line-height: 1; }
+
+  /* Empty state */
+  .notes-empty { text-align: center; padding: 48px 24px; color: var(--text-hint); font-size: 13px; }
+  .notes-empty-icon { font-size: 36px; margin-bottom: 10px; }
 
   .toast { position: fixed; bottom: 20px; right: 20px; background: #1a1a18; color: white; font-size: 13px; padding: 10px 16px; border-radius: var(--radius-sm); opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; z-index: 999; }
   .toast.show { opacity: 1; transform: translateY(0); }
@@ -162,57 +208,96 @@
   </div>
 </div>
 
-<div class="progress-wrap">
-  <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
-  <div class="progress-stats">
-    <div class="pstat"><div class="pstat-val" id="statDone">0</div><div class="pstat-lbl">Afsluttet</div></div>
-    <div class="pstat"><div class="pstat-val" id="statTotal">0</div><div class="pstat-lbl">Steps i alt</div></div>
-    <div class="pstat"><div class="pstat-val" id="statPct">0%</div><div class="pstat-lbl">Fremgang</div></div>
+<!-- Main tab navigation -->
+<div class="main-tabs">
+  <button class="main-tab active" id="tab-tracker" onclick="switchMainTab('tracker')">📋 Tracker</button>
+  <button class="main-tab" id="tab-notes" onclick="switchMainTab('notes')">📝 Noter & To-do <span class="main-tab-badge" id="todoCount" style="display:none"></span></button>
+</div>
+
+<!-- Tracker page -->
+<div class="page active" id="page-tracker">
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+    <div class="progress-stats">
+      <div class="pstat"><div class="pstat-val" id="statDone">0</div><div class="pstat-lbl">Afsluttet</div></div>
+      <div class="pstat"><div class="pstat-val" id="statTotal">0</div><div class="pstat-lbl">Steps i alt</div></div>
+      <div class="pstat"><div class="pstat-val" id="statPct">0%</div><div class="pstat-lbl">Fremgang</div></div>
+    </div>
+  </div>
+  <div class="layout">
+    <main>
+      <div class="phase-tabs" id="phaseTabs"></div>
+      <div id="phaseList"></div>
+    </main>
+    <aside class="sidebar">
+      <div class="card">
+        <div class="card-header"><span class="card-title">📊 Status per fase</span></div>
+        <div class="card-body" id="phaseSummary" style="padding:8px 12px;"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">ℹ️ Vejledning</span></div>
+        <div class="card-body" style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
+          <p style="margin-bottom:6px">✅ Kryds steps af – gemmes automatisk i skyen.</p>
+          <p style="margin-bottom:6px">➕ Tilføj egne steps med "+ Tilføj step".</p>
+          <p style="margin-bottom:6px">📝 Brug "Noter & To-do" fanen til noter og opgaver.</p>
+          <p>🔄 Siden synkroniserer automatisk hvert 30. sekund.</p>
+        </div>
+      </div>
+    </aside>
   </div>
 </div>
 
-<div class="layout">
-  <main>
-    <div class="phase-tabs" id="phaseTabs"></div>
-    <div id="phaseList"></div>
-  </main>
-  <aside class="sidebar">
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">📋 Noter & To-do</span>
-        <button class="btn btn-primary" style="font-size:11px;padding:4px 10px" onclick="toggleNoteForm()">+ Tilføj</button>
-      </div>
-      <div class="card-body">
-        <div class="note-form" id="noteForm">
-          <div class="note-type-row">
-            <button class="type-btn selected" data-type="todo" onclick="selectNoteType('todo',this)">To-do</button>
-            <button class="type-btn" data-type="issue" onclick="selectNoteType('issue',this)">Afklares</button>
-            <button class="type-btn" data-type="note" onclick="selectNoteType('note',this)">Note</button>
-          </div>
-          <textarea class="form-textarea" id="noteText" placeholder="Skriv en note, to-do eller spørgsmål..." rows="3"></textarea>
-          <div class="form-actions">
-            <button class="btn btn-primary" onclick="addNote()">Gem</button>
-            <button class="btn btn-ghost" onclick="toggleNoteForm()">Annuller</button>
-          </div>
-        </div>
-        <div class="notes-list" id="notesList"></div>
-        <div class="hidden" id="notesEmpty" style="text-align:center;padding:16px;color:var(--text-hint);font-size:13px">Ingen noter endnu</div>
-      </div>
+<!-- Notes & To-do page -->
+<div class="page" id="page-notes">
+  <div class="notes-page">
+    <div class="notes-page-header">
+      <span class="notes-page-title">📝 Noter & To-do</span>
+      <button class="btn btn-primary" onclick="toggleNoteForm()">+ Tilføj</button>
     </div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">📊 Status per fase</span></div>
-      <div class="card-body" id="phaseSummary" style="padding:8px 12px;"></div>
-    </div>
-    <div class="card">
-      <div class="card-header"><span class="card-title">ℹ️ Vejledning</span></div>
-      <div class="card-body" style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
-        <p style="margin-bottom:6px">✅ Kryds steps af – gemmes automatisk i skyen.</p>
-        <p style="margin-bottom:6px">➕ Tilføj egne steps med "+ Tilføj step".</p>
-        <p style="margin-bottom:6px">📝 Brug notelisten til åbne spørgsmål og to-do's.</p>
-        <p>🔄 Siden synkroniserer automatisk hvert 30. sekund.</p>
+
+    <!-- Add note form -->
+    <div class="note-add-form" id="noteForm">
+      <div class="note-type-row">
+        <button class="type-btn selected" data-type="todo" onclick="selectNoteType('todo',this)">To-do</button>
+        <button class="type-btn" data-type="issue" onclick="selectNoteType('issue',this)">Afklares</button>
+        <button class="type-btn" data-type="note" onclick="selectNoteType('note',this)">Note</button>
+      </div>
+      <textarea class="form-textarea" id="noteText" placeholder="Skriv en note, to-do eller spørgsmål..." rows="3"></textarea>
+
+      <!-- Image upload -->
+      <div class="img-preview-row" id="imgPreviewRow"></div>
+      <label class="img-upload-area" onclick="document.getElementById('imgFileInput').click()">
+        <input type="file" id="imgFileInput" accept="image/*" multiple onchange="handleImageUpload(this)">
+        <span>📎</span> <span>Vedhæft billede(r) – klik for at vælge</span>
+      </label>
+
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="addNote()">Gem</button>
+        <button class="btn btn-ghost" onclick="toggleNoteForm()">Annuller</button>
       </div>
     </div>
-  </aside>
+
+    <!-- Filter buttons -->
+    <div class="notes-filter-row">
+      <button class="filter-btn active" data-filter="all" onclick="setNoteFilter('all',this)">Alle</button>
+      <button class="filter-btn" data-filter="todo" onclick="setNoteFilter('todo',this)">To-do</button>
+      <button class="filter-btn" data-filter="issue" onclick="setNoteFilter('issue',this)">Afklares</button>
+      <button class="filter-btn" data-filter="note" onclick="setNoteFilter('note',this)">Note</button>
+      <button class="filter-btn" data-filter="done" onclick="setNoteFilter('done',this)">Udført</button>
+    </div>
+
+    <div class="notes-grid" id="notesList"></div>
+    <div class="notes-empty hidden" id="notesEmpty">
+      <div class="notes-empty-icon">📭</div>
+      <div>Ingen noter endnu – klik "+ Tilføj" for at oprette en</div>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="Billede">
 </div>
 
 <div class="toast" id="toast"></div>
@@ -255,7 +340,6 @@ const DEFAULT_PHASES = [
   ]}
 ];
 
-// State – altid start med defaults lokalt
 let state = {
   phases: JSON.parse(JSON.stringify(DEFAULT_PHASES)),
   checked: {},
@@ -269,7 +353,10 @@ let state = {
 let isSaving = false;
 let pendingSave = false;
 let pollTimer = null;
-let lastRemoteVersion = null;
+let currentNoteType = 'todo';
+let pendingImages = []; // [{dataUrl, name}]
+let currentNoteFilter = 'all';
+let activeMainTab = 'tracker';
 
 function setSyncStatus(s) {
   const dot = document.getElementById('syncDot');
@@ -327,16 +414,10 @@ async function initialLoad() {
   document.getElementById('loadingMsg').textContent = 'Henter data fra skyen...';
   try {
     const remote = await cloudGet();
-    console.log('Hentet fra JSONBin:', remote);
-
-    // Hvis phases er tom eller mangler, gem defaults op
     if (!remote.phases || remote.phases.length === 0) {
-      console.log('Tomt bin – gemmer default faser op til skyen...');
       document.getElementById('loadingMsg').textContent = 'Opretter data i skyen...';
       await cloudPut(buildPayload());
-      console.log('Default data gemt i JSONBin');
     } else {
-      // Hent eksisterende data
       mergeRemote(remote);
     }
     setSyncStatus('synced');
@@ -345,7 +426,6 @@ async function initialLoad() {
     setSyncStatus('error');
     showToast('⚠️ Kunne ikke forbinde til skyen – kører lokalt');
   }
-
   document.getElementById('loadingOverlay').style.display = 'none';
   render();
   startPolling();
@@ -358,7 +438,6 @@ async function scheduleSave() {
   try {
     await cloudPut(buildPayload());
     setSyncStatus('synced');
-    console.log('Gemt til JSONBin');
   } catch(e) {
     console.error('Gem fejl:', e);
     setSyncStatus('error');
@@ -373,27 +452,37 @@ function startPolling() {
     try {
       const remote = await cloudGet();
       const changed = mergeRemote(remote);
-      if (changed) {
-        render();
-        setSyncStatus('synced');
-        showToast('🔄 Opdateret fra skyen');
-        console.log('Polling: fandt ændringer og opdaterede');
-      }
-    } catch(e) {
-      console.warn('Polling fejl:', e);
-    }
+      if (changed) { render(); setSyncStatus('synced'); showToast('🔄 Opdateret fra skyen'); }
+    } catch(e) { console.warn('Polling fejl:', e); }
   }, 30000);
 }
 
-// Render
 function render() {
   renderTabs();
   renderPhases();
   renderNotes();
   updateProgress();
   updatePhaseSummary();
+  updateTodoBadge();
 }
 
+// ---- Main tab switching ----
+function switchMainTab(tab) {
+  activeMainTab = tab;
+  document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+}
+
+function updateTodoBadge() {
+  const count = state.notes.filter(n => n.type === 'todo').length;
+  const badge = document.getElementById('todoCount');
+  if (count > 0) { badge.textContent = count; badge.style.display = ''; }
+  else { badge.style.display = 'none'; }
+}
+
+// ---- Tracker ----
 function renderTabs() {
   const c = document.getElementById('phaseTabs');
   let html = `<button class="phase-tab ${state.activePhase==='all'?'active':''}" onclick="setPhase('all')">Alle faser</button>`;
@@ -410,7 +499,6 @@ function renderPhases() {
     const isVisible = state.activePhase === 'all' || state.activePhase === ph.id;
     const isOpen = state.phaseExpanded[ph.id] !== false;
     const doneCount = ph.steps.filter(s => state.checked[s.id]).length;
-
     let stepsHtml = '';
     ph.steps.forEach((step, si) => {
       const isDone = !!state.checked[step.id];
@@ -428,7 +516,6 @@ function renderPhases() {
           <div class="step-body ${isExpanded?'open':''}">${step.body}</div>
         </div>`;
     });
-
     const div = document.createElement('div');
     div.className = 'phase';
     div.style.display = isVisible ? 'block' : 'none';
@@ -559,53 +646,143 @@ function deleteStep(phaseId, stepId) {
   showToast('🗑 Step slettet');
 }
 
-let currentNoteType = 'todo';
+// ---- Notes & To-do ----
 function toggleNoteForm() {
   const f = document.getElementById('noteForm');
   f.classList.toggle('open');
-  if (f.classList.contains('open')) document.getElementById('noteText').focus();
+  if (f.classList.contains('open')) {
+    document.getElementById('noteText').focus();
+  } else {
+    pendingImages = [];
+    renderImagePreviews();
+    document.getElementById('noteText').value = '';
+    document.getElementById('imgFileInput').value = '';
+  }
 }
+
 function selectNoteType(type, btn) {
   currentNoteType = type;
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
 }
+
+function setNoteFilter(filter, btn) {
+  currentNoteFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderNotes();
+}
+
+function handleImageUpload(input) {
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      pendingImages.push({ dataUrl: e.target.result, name: file.name });
+      renderImagePreviews();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function renderImagePreviews() {
+  const row = document.getElementById('imgPreviewRow');
+  row.innerHTML = pendingImages.map((img, i) => `
+    <div class="img-thumb-wrap">
+      <img class="img-thumb" src="${img.dataUrl}" alt="${img.name}">
+      <button class="img-thumb-del" onclick="removePendingImage(${i})">✕</button>
+    </div>`).join('');
+}
+
+function removePendingImage(i) {
+  pendingImages.splice(i, 1);
+  renderImagePreviews();
+}
+
 function addNote() {
   const text = document.getElementById('noteText').value.trim();
   if (!text) return;
-  state.notes.unshift({ id: Date.now(), type: currentNoteType, text, date: new Date().toLocaleDateString('da-DK',{day:'numeric',month:'short',year:'numeric'}) });
+  state.notes.unshift({
+    id: Date.now(),
+    type: currentNoteType,
+    text,
+    date: new Date().toLocaleDateString('da-DK',{day:'numeric',month:'short',year:'numeric'}),
+    images: pendingImages.map(img => img.dataUrl)
+  });
   document.getElementById('noteText').value = '';
   document.getElementById('noteForm').classList.remove('open');
+  pendingImages = [];
+  renderImagePreviews();
   scheduleSave();
   renderNotes();
+  updateTodoBadge();
   showToast('📝 Note gemt');
 }
+
 function deleteNote(id) {
   state.notes = state.notes.filter(n => n.id!==id);
   scheduleSave();
   renderNotes();
+  updateTodoBadge();
 }
+
 function markNoteType(id, type) {
   const n = state.notes.find(n => n.id===id);
-  if (n) { n.type = type; scheduleSave(); renderNotes(); }
+  if (n) { n.type = type; scheduleSave(); renderNotes(); updateTodoBadge(); }
 }
+
 function renderNotes() {
   const list = document.getElementById('notesList');
   const empty = document.getElementById('notesEmpty');
-  if (!state.notes.length) { list.innerHTML=''; empty.classList.remove('hidden'); return; }
+  const filtered = currentNoteFilter === 'all'
+    ? state.notes
+    : state.notes.filter(n => n.type === currentNoteFilter);
+
+  if (!filtered.length) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
   empty.classList.add('hidden');
+
   const tl = {todo:'To-do',issue:'Afklares',note:'Note',done:'Udført'};
   const tb = {todo:'badge-todo',issue:'badge-issue',note:'badge-note',done:'badge-done'};
-  list.innerHTML = state.notes.map(n => `
-    <div class="note-item type-${n.type}">
-      <div style="margin-bottom:4px"><span class="note-type-badge ${tb[n.type]}">${tl[n.type]}</span></div>
-      <div class="note-text">${n.text.replace(/\n/g,'<br>')}</div>
-      <div class="note-date">${n.date}</div>
+
+  list.innerHTML = filtered.map(n => {
+    const imgs = (n.images || []).map((src, i) =>
+      `<img class="note-img" src="${src}" alt="Billede" onclick="openLightbox('${n.id}',${i})">`
+    ).join('');
+    return `
+    <div class="note-card type-${n.type}">
+      <div class="note-card-body">
+        <span class="note-type-badge ${tb[n.type]}">${tl[n.type]}</span>
+        <div class="note-text">${escHtml(n.text)}</div>
+        ${imgs ? `<div class="note-images">${imgs}</div>` : ''}
+        <div class="note-date">${n.date}</div>
+      </div>
       <div class="note-actions">
         ${n.type!=='done'?`<button class="btn btn-ghost" style="font-size:11px;padding:3px 8px" onclick="markNoteType(${n.id},'done')">✓ Udført</button>`:''}
         <button class="btn btn-danger" onclick="deleteNote(${n.id})">Slet</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+// ---- Lightbox ----
+function openLightbox(noteId, imgIdx) {
+  const note = state.notes.find(n => n.id == noteId);
+  if (!note || !note.images) return;
+  document.getElementById('lightboxImg').src = note.images[imgIdx];
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lightboxImg').src = '';
 }
 
 function showToast(msg) {
