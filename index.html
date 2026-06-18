@@ -102,8 +102,22 @@
   .step.done .step-title { color: var(--gray-400); text-decoration: line-through; text-decoration-color: var(--gray-400); }
   .step-tcode { font-size: 10px; font-family: var(--font-mono); background: var(--gray-100); border: var(--border); padding: 1px 6px; color: var(--gray-600); flex-shrink: 0; }
   .step-del { display: none; background: transparent; border: none; cursor: pointer; font-size: 13px; color: var(--gray-400); padding: 2px 4px; }
-  .step-header:hover .step-del { display: inline-flex; }
+  .step-edit { display: none; background: transparent; border: none; cursor: pointer; font-size: 13px; color: var(--gray-400); padding: 2px 4px; }
+  .step-header:hover .step-del,
+  .step-header:hover .step-edit { display: inline-flex; }
   .step-del:hover { color: var(--issue-red); }
+  .step-edit:hover { color: var(--black); }
+
+  .step-edit-form { display: none; padding: 12px 14px; border-top: var(--border); background: var(--gray-100); }
+  .step-edit-form.open { display: block; }
+
+  .insert-step-row { display: flex; align-items: center; padding: 0 8px; height: 6px; overflow: hidden; transition: height 0.15s, opacity 0.15s; opacity: 0; }
+  .steps-list:hover .insert-step-row { height: 24px; opacity: 0.35; }
+  .insert-step-row:hover { opacity: 1 !important; height: 24px; }
+  .insert-step-btn { flex: 1; height: 20px; border: 1px dashed var(--gray-400); background: transparent; cursor: pointer; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-600); text-align: center; transition: all 0.12s; }
+  .insert-step-btn:hover { border-color: var(--black); color: var(--black); background: var(--white); }
+  .insert-step-form { background: var(--gray-100); border: var(--border); padding: 12px 14px; margin: 2px 8px; display: none; }
+  .insert-step-form.open { display: block; }
   .step-expand { font-size: 14px; color: var(--gray-400); transition: transform 0.2s; flex-shrink: 0; }
   .step-expand.open { transform: rotate(180deg); }
   .step-body { display: none; padding: 0 14px 14px 48px; font-size: 12px; color: var(--gray-600); line-height: 1.65; border-top: var(--border); }
@@ -451,6 +465,23 @@ function updateTodoBadge() {
   badge.textContent = count; badge.style.display = count > 0 ? '' : 'none';
 }
 
+function escAttr(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function insertFormHtml(phaseId, pos) {
+  return `
+    <div class="form-row">
+      <input class="form-input" id="ins-name-${phaseId}-${pos}" placeholder="Step navn..." style="flex:2">
+      <input class="form-input" id="ins-tcode-${phaseId}-${pos}" placeholder="T-kode (valgfri)" style="flex:0.6">
+    </div>
+    <textarea class="form-textarea" id="ins-body-${phaseId}-${pos}" placeholder="Beskrivelse (valgfri)..."></textarea>
+    <div class="form-actions">
+      <button class="btn btn-primary" onclick="insertStep('${phaseId}', ${pos})">Tilføj</button>
+      <button class="btn btn-ghost" onclick="hideInsertForm('${phaseId}', ${pos})">Annuller</button>
+    </div>`;
+}
+
 function renderTabs() {
   const c = document.getElementById('phaseTabs');
   let html = `<button class="phase-tab ${state.activePhase==='all'?'active':''}" onclick="setPhase('all')">Alle faser</button>`;
@@ -467,6 +498,14 @@ function renderPhases() {
     const isOpen = state.phaseExpanded[ph.id] !== false;
     const doneCount = ph.steps.filter(s => state.checked[s.id]).length;
     let stepsHtml = '';
+    // Insert-at-top button
+    stepsHtml += `
+      <div class="insert-step-row" id="insert-row-${ph.id}-top">
+        <button class="insert-step-btn" onclick="showInsertForm('${ph.id}', 0)">+ Indsæt step her</button>
+      </div>
+      <div class="insert-step-form" id="insert-form-${ph.id}-0">
+        ${insertFormHtml(ph.id, 0)}
+      </div>`;
     ph.steps.forEach((step, si) => {
       const isDone = !!state.checked[step.id];
       const isExpanded = !!state.expanded[step.id];
@@ -477,10 +516,28 @@ function renderPhases() {
             <span class="step-num">${ph.id}.${si+1}</span>
             <span class="step-title">${step.name}</span>
             ${step.tcode?`<span class="step-tcode">${step.tcode}</span>`:''}
+            <button class="step-edit" title="Redigér" onclick="event.stopPropagation();toggleEditForm('${ph.id}','${step.id}')">✎</button>
             <button class="step-del" onclick="event.stopPropagation();deleteStep('${ph.id}','${step.id}')">✕</button>
             <span class="step-expand ${isExpanded?'open':''}">⌄</span>
           </div>
           <div class="step-body ${isExpanded?'open':''}">${step.body}</div>
+          <div class="step-edit-form" id="edit-form-${step.id}">
+            <div class="form-row">
+              <input class="form-input" id="edit-name-${step.id}" value="${escAttr(step.name)}" placeholder="Step navn..." style="flex:2">
+              <input class="form-input" id="edit-tcode-${step.id}" value="${escAttr(step.tcode||'')}" placeholder="T-kode (valgfri)" style="flex:0.6">
+            </div>
+            <textarea class="form-textarea" id="edit-body-${step.id}" placeholder="Beskrivelse...">${escAttr(step.body||'')}</textarea>
+            <div class="form-actions">
+              <button class="btn btn-primary" onclick="saveEditStep('${ph.id}','${step.id}')">Gem ændringer</button>
+              <button class="btn btn-ghost" onclick="toggleEditForm('${ph.id}','${step.id}')">Annuller</button>
+            </div>
+          </div>
+        </div>
+        <div class="insert-step-row" id="insert-row-${ph.id}-${si+1}">
+          <button class="insert-step-btn" onclick="showInsertForm('${ph.id}', ${si+1})">+ Indsæt step her</button>
+        </div>
+        <div class="insert-step-form" id="insert-form-${ph.id}-${si+1}">
+          ${insertFormHtml(ph.id, si+1)}
         </div>`;
     });
     const div = document.createElement('div');
@@ -592,6 +649,48 @@ function deleteStep(phaseId, stepId) {
   const ph = state.phases.find(p => p.id===phaseId); if (!ph) return;
   ph.steps = ph.steps.filter(s => s.id!==stepId); delete state.checked[stepId];
   scheduleSave(); render(); showToast('Step slettet');
+}
+
+function toggleEditForm(phaseId, stepId) {
+  const form = document.getElementById('edit-form-' + stepId);
+  if (!form) return;
+  const isOpen = form.classList.contains('open');
+  // Close all other edit forms first
+  document.querySelectorAll('.step-edit-form.open').forEach(f => f.classList.remove('open'));
+  if (!isOpen) form.classList.add('open');
+}
+
+function saveEditStep(phaseId, stepId) {
+  const ph = state.phases.find(p => p.id===phaseId); if (!ph) return;
+  const step = ph.steps.find(s => s.id===stepId); if (!step) return;
+  const name = document.getElementById('edit-name-'+stepId)?.value.trim();
+  if (!name) return;
+  step.name = name;
+  step.tcode = document.getElementById('edit-tcode-'+stepId)?.value.trim() || '';
+  step.body = document.getElementById('edit-body-'+stepId)?.value.trim() || '';
+  scheduleSave(); render(); showToast('Step opdateret');
+}
+
+function showInsertForm(phaseId, pos) {
+  // Close all other insert forms
+  document.querySelectorAll('.insert-step-form.open').forEach(f => f.classList.remove('open'));
+  const form = document.getElementById(`insert-form-${phaseId}-${pos}`);
+  if (form) { form.classList.add('open'); form.querySelector('input')?.focus(); }
+}
+
+function hideInsertForm(phaseId, pos) {
+  const form = document.getElementById(`insert-form-${phaseId}-${pos}`);
+  if (form) form.classList.remove('open');
+}
+
+function insertStep(phaseId, pos) {
+  const name = document.getElementById(`ins-name-${phaseId}-${pos}`)?.value.trim();
+  if (!name) return;
+  const tcode = document.getElementById(`ins-tcode-${phaseId}-${pos}`)?.value.trim() || '';
+  const body = document.getElementById(`ins-body-${phaseId}-${pos}`)?.value.trim() || '';
+  const ph = state.phases.find(p => p.id===phaseId); if (!ph) return;
+  ph.steps.splice(pos, 0, { id: phaseId+'-c-'+(state.nextCustomId++), name, tcode, body: body||'(Ingen beskrivelse)' });
+  scheduleSave(); render(); showToast('Step indsat');
 }
 
 // ── Notes ──
