@@ -6,186 +6,211 @@
 <title>ICMR Setup Tracker – SAP S/4HANA</title>
 <style>
   :root {
-    --blue: #185FA5; --blue-light: #E6F1FB; --blue-mid: #B5D4F4;
-    --green: #0F6E56; --green-light: #E1F5EE;
-    --coral: #993C1D; --coral-light: #FAECE7;
-    --purple: #534AB7; --purple-light: #EEEDFE;
-    --gray: #5F5E5A; --gray-light: #F1EFE8;
-    --amber: #854F0B; --amber-light: #FAEEDA;
-    --text: #1a1a18; --text-secondary: #5a5a56; --text-hint: #8a8a84;
-    --border: rgba(0,0,0,0.1); --border-strong: rgba(0,0,0,0.18);
-    --surface: #ffffff; --surface2: #f7f6f3; --surface3: #f0efe9;
-    --radius: 10px; --radius-sm: 6px;
-    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-mono: 'SF Mono', 'Fira Code', monospace;
+    --black: #000000;
+    --white: #ffffff;
+    --gray-100: #f5f5f5;
+    --gray-200: #e8e8e8;
+    --gray-400: #b0b0b0;
+    --gray-600: #666666;
+    --gray-800: #333333;
+    --accent: #000000;
+    --done-green: #2e7d32;
+    --todo-amber: #b45309;
+    --issue-red: #991b1b;
+    --note-blue: #1e3a5f;
+    --border: 1px solid #e0e0e0;
+    --border-strong: 1px solid #000000;
+    --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-mono: 'Courier New', monospace;
+    --radius: 0px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font); background: var(--surface3); color: var(--text); font-size: 15px; line-height: 1.6; min-height: 100vh; }
+  body { font-family: var(--font); background: var(--gray-100); color: var(--black); font-size: 14px; line-height: 1.6; min-height: 100vh; }
 
-  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 2rem; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 58px; }
-  .header-left { display: flex; align-items: center; gap: 14px; }
-  .header-logo { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; color: var(--text-hint); text-transform: uppercase; }
-  .header-title { font-size: 15px; font-weight: 500; }
-  .header-sep { width: 1px; height: 20px; background: var(--border-strong); }
+  /* ── HEADER ── */
+  .header {
+    background: var(--black); color: var(--white);
+    padding: 0 2rem; position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; height: 56px;
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .header-logo { font-size: 14px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--white); }
+  .header-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.25); }
+  .header-title { font-size: 13px; font-weight: 400; color: rgba(255,255,255,0.75); letter-spacing: 0.02em; }
 
-  .sync-indicator { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-hint); padding: 4px 10px; border: 1px solid var(--border); border-radius: 20px; }
-  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #ccc; flex-shrink: 0; transition: background 0.3s; }
-  .sync-dot.syncing { background: var(--amber); animation: pulse 1s infinite; }
-  .sync-dot.synced { background: #2e9e6b; }
-  .sync-dot.error { background: var(--coral); }
+  .sync-indicator { display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(255,255,255,0.6); padding: 4px 10px; border: 1px solid rgba(255,255,255,0.2); letter-spacing: 0.04em; }
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3); flex-shrink: 0; transition: background 0.3s; }
+  .sync-dot.syncing { background: #f59e0b; animation: pulse 1s infinite; }
+  .sync-dot.synced { background: #4ade80; }
+  .sync-dot.error { background: #f87171; }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-  /* Main tab navigation */
-  .main-tabs { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; gap: 0; }
-  .main-tab { padding: 12px 20px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border: none; background: transparent; border-bottom: 2.5px solid transparent; transition: all 0.15s; display: flex; align-items: center; gap: 7px; }
-  .main-tab:hover { color: var(--blue); }
-  .main-tab.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 600; }
-  .main-tab-badge { background: var(--amber-light); color: var(--amber); font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; }
+  /* ── MAIN TABS ── */
+  .main-tabs { background: var(--white); border-bottom: var(--border); padding: 0 2rem; display: flex; }
+  .main-tab {
+    padding: 14px 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--gray-600); cursor: pointer; border: none; background: transparent;
+    border-bottom: 2px solid transparent; transition: all 0.15s; display: flex; align-items: center; gap: 8px;
+  }
+  .main-tab:hover { color: var(--black); }
+  .main-tab.active { color: var(--black); border-bottom-color: var(--black); }
+  .main-tab-badge { background: var(--black); color: var(--white); font-size: 10px; font-weight: 700; padding: 1px 6px; letter-spacing: 0; }
 
-  .progress-wrap { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 2rem; display: flex; align-items: center; gap: 20px; }
-  .progress-track { flex: 1; height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
-  .progress-fill { height: 100%; background: var(--blue); border-radius: 3px; transition: width 0.4s; }
-  .progress-stats { display: flex; gap: 20px; flex-shrink: 0; }
+  /* ── PROGRESS BAR ── */
+  .progress-wrap { background: var(--white); border-bottom: var(--border); padding: 14px 2rem; display: flex; align-items: center; gap: 24px; }
+  .progress-track { flex: 1; height: 3px; background: var(--gray-200); overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--black); transition: width 0.4s; }
+  .progress-stats { display: flex; gap: 32px; flex-shrink: 0; }
   .pstat { text-align: center; }
-  .pstat-val { font-size: 18px; font-weight: 600; }
-  .pstat-lbl { font-size: 11px; color: var(--text-hint); text-transform: uppercase; letter-spacing: 0.05em; }
+  .pstat-val { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+  .pstat-lbl { font-size: 10px; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.1em; }
 
-  /* Tracker page */
+  /* ── PAGES ── */
   .page { display: none; }
   .page.active { display: block; }
 
-  .layout { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; max-width: 1300px; margin: 0 auto; padding: 1.5rem 2rem; align-items: start; }
+  /* ── TRACKER LAYOUT ── */
+  .layout { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; max-width: 1280px; margin: 0 auto; padding: 1.5rem 2rem; align-items: start; }
   @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
 
-  .phase-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
-  .phase-tab { font-size: 12px; padding: 5px 12px; border: 1px solid var(--border-strong); border-radius: 20px; background: var(--surface); cursor: pointer; color: var(--text-secondary); transition: all 0.15s; font-weight: 500; }
-  .phase-tab:hover { border-color: var(--blue); color: var(--blue); }
-  .phase-tab.active { background: var(--blue); color: white; border-color: var(--blue); }
+  .phase-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .phase-tab { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 5px 12px; border: var(--border); background: var(--white); cursor: pointer; color: var(--gray-600); transition: all 0.12s; }
+  .phase-tab:hover { border-color: var(--black); color: var(--black); }
+  .phase-tab.active { background: var(--black); color: var(--white); border-color: var(--black); }
 
-  .phase { margin-bottom: 1.25rem; }
-  .phase-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 6px; cursor: pointer; user-select: none; }
-  .phase-header:hover { background: var(--surface2); }
-  .phase-badge { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .phase { margin-bottom: 1rem; }
+  .phase-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--white); border: var(--border); margin-bottom: 4px; cursor: pointer; user-select: none; }
+  .phase-header:hover { background: var(--gray-100); }
+  .phase-badge { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
   .phase-info { flex: 1; }
-  .phase-name { font-size: 14px; font-weight: 600; }
-  .phase-desc { font-size: 12px; color: var(--text-secondary); }
-  .phase-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-  .phase-count { font-size: 12px; color: var(--text-hint); }
-  .phase-chevron { font-size: 18px; color: var(--text-hint); transition: transform 0.2s; }
+  .phase-name { font-size: 13px; font-weight: 600; letter-spacing: 0.01em; }
+  .phase-desc { font-size: 11px; color: var(--gray-600); }
+  .phase-meta { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .phase-count { font-size: 11px; color: var(--gray-600); font-weight: 600; }
+  .phase-chevron { font-size: 16px; color: var(--gray-400); transition: transform 0.2s; }
   .phase-chevron.open { transform: rotate(180deg); }
 
-  .steps-list { display: flex; flex-direction: column; gap: 4px; padding-left: 8px; }
-  .step { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
-  .step.done { border-left: 3px solid #2e9e6b; }
-  .step:hover { border-color: var(--border-strong); }
+  .steps-list { display: flex; flex-direction: column; gap: 2px; padding-left: 6px; }
+  .step { background: var(--white); border: var(--border); overflow: hidden; }
+  .step.done { border-left: 3px solid var(--done-green); }
+  .step:hover { border-color: var(--gray-800); }
   .step-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; }
-  .step-cb { flex-shrink: 0; width: 17px; height: 17px; cursor: pointer; accent-color: #2e9e6b; }
-  .step-num { font-size: 11px; color: var(--text-hint); min-width: 24px; font-family: var(--font-mono); }
+  .step-cb { flex-shrink: 0; width: 15px; height: 15px; cursor: pointer; accent-color: var(--done-green); }
+  .step-num { font-size: 10px; color: var(--gray-400); min-width: 24px; font-family: var(--font-mono); }
   .step-title { flex: 1; font-size: 13px; font-weight: 500; }
-  .step.done .step-title { color: var(--text-hint); text-decoration: line-through; text-decoration-color: #aaa; }
-  .step-tcode { font-size: 10px; font-family: var(--font-mono); background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; color: var(--text-secondary); flex-shrink: 0; }
-  .step-del { display: none; background: transparent; border: none; cursor: pointer; font-size: 14px; color: var(--text-hint); padding: 2px 4px; }
+  .step.done .step-title { color: var(--gray-400); text-decoration: line-through; text-decoration-color: var(--gray-400); }
+  .step-tcode { font-size: 10px; font-family: var(--font-mono); background: var(--gray-100); border: var(--border); padding: 1px 6px; color: var(--gray-600); flex-shrink: 0; }
+  .step-del { display: none; background: transparent; border: none; cursor: pointer; font-size: 13px; color: var(--gray-400); padding: 2px 4px; }
   .step-header:hover .step-del { display: inline-flex; }
-  .step-del:hover { color: var(--coral); }
-  .step-expand { font-size: 16px; color: var(--text-hint); transition: transform 0.2s; flex-shrink: 0; }
+  .step-del:hover { color: var(--issue-red); }
+  .step-expand { font-size: 14px; color: var(--gray-400); transition: transform 0.2s; flex-shrink: 0; }
   .step-expand.open { transform: rotate(180deg); }
-  .step-body { display: none; padding: 0 14px 14px 50px; font-size: 13px; color: var(--text-secondary); line-height: 1.65; border-top: 1px solid var(--border); }
+  .step-body { display: none; padding: 0 14px 14px 48px; font-size: 12px; color: var(--gray-600); line-height: 1.65; border-top: var(--border); }
   .step-body.open { display: block; padding-top: 12px; }
-  .step-body ul { padding-left: 18px; margin: 6px 0; }
+  .step-body ul { padding-left: 16px; margin: 6px 0; }
   .step-body li { margin-bottom: 3px; }
-  .step-body code { font-family: var(--font-mono); font-size: 11px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 5px; border-radius: 3px; color: var(--text); }
-  .step-note { background: var(--blue-light); border-left: 3px solid var(--blue); border-radius: 0 4px 4px 0; padding: 8px 10px; margin-top: 10px; font-size: 12px; color: #0c447c; line-height: 1.5; }
+  .step-body code { font-family: var(--font-mono); font-size: 11px; background: var(--gray-100); border: var(--border); padding: 1px 4px; color: var(--black); }
+  .step-note { background: var(--gray-100); border-left: 2px solid var(--black); padding: 8px 10px; margin-top: 10px; font-size: 11px; color: var(--gray-800); line-height: 1.5; }
 
-  .add-step-row { padding: 6px 8px; }
-  .add-step-btn { width: 100%; padding: 8px 12px; border: 1.5px dashed var(--border-strong); border-radius: var(--radius-sm); background: transparent; cursor: pointer; font-size: 12px; color: var(--text-hint); display: flex; align-items: center; gap: 6px; transition: all 0.15s; }
-  .add-step-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
-  .add-step-form { background: var(--blue-light); border: 1px solid var(--blue-mid); border-radius: var(--radius-sm); padding: 12px 14px; margin: 4px 8px; display: none; }
+  .add-step-row { padding: 4px 6px; }
+  .add-step-btn { width: 100%; padding: 8px 12px; border: 1px dashed var(--gray-400); background: transparent; cursor: pointer; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-600); display: flex; align-items: center; gap: 6px; transition: all 0.12s; }
+  .add-step-btn:hover { border-color: var(--black); color: var(--black); }
+  .add-step-form { background: var(--gray-100); border: var(--border); padding: 12px 14px; margin: 2px 6px; display: none; }
   .add-step-form.open { display: block; }
   .form-row { display: flex; gap: 8px; margin-bottom: 8px; }
-  .form-input { flex: 1; padding: 7px 10px; font-size: 13px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-family: var(--font); }
-  .form-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(24,95,165,0.12); }
-  .form-textarea { width: 100%; padding: 7px 10px; font-size: 13px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-family: var(--font); resize: vertical; min-height: 60px; margin-bottom: 8px; }
-  .form-textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(24,95,165,0.12); }
+  .form-input { flex: 1; padding: 8px 10px; font-size: 13px; border: var(--border); background: var(--white); color: var(--black); font-family: var(--font); }
+  .form-input:focus { outline: none; border-color: var(--black); }
+  .form-textarea { width: 100%; padding: 8px 10px; font-size: 13px; border: var(--border); background: var(--white); color: var(--black); font-family: var(--font); resize: vertical; min-height: 60px; margin-bottom: 8px; }
+  .form-textarea:focus { outline: none; border-color: var(--black); }
   .form-actions { display: flex; gap: 6px; }
-  .btn { padding: 6px 14px; font-size: 12px; font-weight: 500; border-radius: var(--radius-sm); cursor: pointer; border: 1px solid; transition: all 0.15s; font-family: var(--font); }
-  .btn-primary { background: var(--blue); color: white; border-color: var(--blue); }
-  .btn-ghost { background: transparent; color: var(--text-secondary); border-color: var(--border-strong); }
-  .btn-ghost:hover { background: var(--surface2); }
-  .btn-danger { background: transparent; color: #993C1D; border-color: #f0997b; font-size: 11px; padding: 4px 8px; }
-  .btn-danger:hover { background: var(--coral-light); }
+
+  .btn { padding: 7px 16px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; border: none; transition: all 0.12s; font-family: var(--font); }
+  .btn-primary { background: var(--black); color: var(--white); }
+  .btn-primary:hover { background: var(--gray-800); }
+  .btn-ghost { background: transparent; color: var(--black); border: var(--border-strong); }
+  .btn-ghost:hover { background: var(--gray-100); }
+  .btn-danger { background: transparent; color: var(--issue-red); border: 1px solid #fca5a5; font-size: 10px; padding: 4px 10px; }
+  .btn-danger:hover { background: #fef2f2; }
 
   .sidebar { display: flex; flex-direction: column; gap: 1rem; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .card-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .card-title { font-size: 13px; font-weight: 600; }
+  .card { background: var(--white); border: var(--border); overflow: hidden; }
+  .card-header { padding: 12px 16px; border-bottom: var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
   .card-body { padding: 12px 16px; }
 
-  /* Notes page */
-  .notes-page { max-width: 900px; margin: 0 auto; padding: 1.5rem 2rem; }
-  .notes-page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
-  .notes-page-title { font-size: 18px; font-weight: 600; }
-  .notes-filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
-  .filter-btn { font-size: 12px; padding: 4px 12px; border: 1px solid var(--border-strong); border-radius: 20px; background: var(--surface); cursor: pointer; color: var(--text-secondary); font-weight: 500; transition: all 0.15s; }
-  .filter-btn:hover { border-color: var(--blue); color: var(--blue); }
-  .filter-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
+  /* ── NOTES PAGE ── */
+  .notes-page { max-width: 960px; margin: 0 auto; padding: 1.5rem 2rem; }
+  .notes-page-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1.5rem; border-bottom: var(--border-strong); padding-bottom: 1rem; }
+  .notes-page-title { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+  .notes-filter-row { display: flex; gap: 0; flex-wrap: wrap; margin-bottom: 1.25rem; border: var(--border); display: inline-flex; }
+  .filter-btn { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; padding: 6px 14px; border: none; border-right: var(--border); background: var(--white); cursor: pointer; color: var(--gray-600); transition: all 0.12s; }
+  .filter-btn:last-child { border-right: none; }
+  .filter-btn:hover { background: var(--gray-100); color: var(--black); }
+  .filter-btn.active { background: var(--black); color: var(--white); }
 
-  /* Note form (full page) */
-  .note-add-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 1.25rem; display: none; }
+  /* Note form */
+  .note-add-form { background: var(--white); border: var(--border-strong); padding: 20px; margin-bottom: 1.5rem; display: none; }
   .note-add-form.open { display: block; }
-  .note-type-row { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
-  .type-btn { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; cursor: pointer; border: 1px solid; transition: all 0.15s; }
-  .type-btn[data-type="todo"] { color: var(--amber); border-color: var(--amber); }
-  .type-btn[data-type="issue"] { color: var(--coral); border-color: var(--coral); }
-  .type-btn[data-type="note"] { color: var(--blue); border-color: var(--blue); }
-  .type-btn.selected[data-type="todo"] { background: var(--amber-light); }
-  .type-btn.selected[data-type="issue"] { background: var(--coral-light); }
-  .type-btn.selected[data-type="note"] { background: var(--blue-light); }
+  .note-type-row { display: flex; gap: 0; margin-bottom: 12px; border: var(--border); display: none inline-flex; }
+  .note-type-row { display: flex; gap: 0; margin-bottom: 12px; }
+  .type-btn { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding: 6px 14px; cursor: pointer; border: var(--border); background: var(--white); transition: all 0.12s; margin-right: -1px; }
+  .type-btn[data-type="todo"].selected { background: var(--todo-amber); color: var(--white); border-color: var(--todo-amber); }
+  .type-btn[data-type="issue"].selected { background: var(--issue-red); color: var(--white); border-color: var(--issue-red); }
+  .type-btn[data-type="note"].selected { background: var(--note-blue); color: var(--white); border-color: var(--note-blue); }
+  .type-btn:not(.selected) { color: var(--gray-600); }
+  .type-btn:not(.selected):hover { background: var(--gray-100); color: var(--black); }
 
   /* Image upload */
-  .img-upload-area { border: 1.5px dashed var(--border-strong); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 10px; cursor: pointer; transition: all 0.15s; background: var(--surface2); display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-hint); }
-  .img-upload-area:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+  .img-upload-area { border: 1px dashed var(--gray-400); padding: 10px 14px; margin-bottom: 10px; cursor: pointer; transition: all 0.12s; background: var(--gray-100); display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--gray-600); }
+  .img-upload-area:hover { border-color: var(--black); color: var(--black); background: var(--white); }
   .img-upload-area input[type="file"] { display: none; }
   .img-preview-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
   .img-thumb-wrap { position: relative; display: inline-block; }
-  .img-thumb { width: 72px; height: 72px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border); }
-  .img-thumb-del { position: absolute; top: -5px; right: -5px; background: var(--coral); color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
+  .img-thumb { width: 72px; height: 72px; object-fit: cover; border: var(--border); }
+  .img-thumb-del { position: absolute; top: -6px; right: -6px; background: var(--black); color: var(--white); border: none; width: 18px; height: 18px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
   /* Notes grid */
-  .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
-  .note-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; border-top: 3px solid var(--border-strong); }
-  .note-card.type-todo { border-top-color: var(--amber); }
-  .note-card.type-issue { border-top-color: var(--coral); }
-  .note-card.type-note { border-top-color: var(--blue); }
-  .note-card.type-done { border-top-color: #2e9e6b; opacity: 0.65; }
+  .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1px; background: var(--gray-200); border: var(--border); }
+  .note-card { background: var(--white); overflow: hidden; border-left: 3px solid transparent; }
+  .note-card.type-todo { border-left-color: var(--todo-amber); }
+  .note-card.type-issue { border-left-color: var(--issue-red); }
+  .note-card.type-note { border-left-color: var(--note-blue); }
+  .note-card.type-done { border-left-color: var(--done-green); }
   .note-card-body { padding: 14px 16px; }
-  .note-type-badge { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 1px 6px; border-radius: 10px; display: inline-block; margin-bottom: 6px; }
-  .badge-todo { background: var(--amber-light); color: var(--amber); }
-  .badge-issue { background: var(--coral-light); color: var(--coral); }
-  .badge-note { background: var(--blue-light); color: var(--blue); }
-  .badge-done { background: var(--green-light); color: var(--green); }
-  .note-text { font-size: 13px; color: var(--text-secondary); line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
-  .note-date { font-size: 11px; color: var(--text-hint); margin-top: 8px; }
-  .note-images { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .note-img { width: 80px; height: 80px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border); cursor: pointer; transition: opacity 0.15s; }
-  .note-img:hover { opacity: 0.85; }
-  .note-actions { padding: 8px 16px 12px; display: flex; gap: 6px; border-top: 1px solid var(--border); }
+  .note-header-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .note-num { font-size: 11px; font-weight: 700; color: var(--gray-400); font-family: var(--font-mono); min-width: 28px; }
+  .note-type-badge { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; padding: 2px 6px; display: inline-block; }
+  .badge-todo { background: #fef3c7; color: var(--todo-amber); }
+  .badge-issue { background: #fee2e2; color: var(--issue-red); }
+  .badge-note { background: #dbeafe; color: var(--note-blue); }
+  .badge-done { background: #dcfce7; color: var(--done-green); }
+  .note-done-mark { font-size: 11px; color: var(--done-green); font-weight: 700; margin-left: auto; }
+  .note-text { font-size: 13px; color: var(--gray-800); line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+  .note-card.type-done .note-text { color: var(--gray-400); text-decoration: line-through; text-decoration-color: var(--gray-400); }
+  .note-date { font-size: 10px; color: var(--gray-400); margin-top: 8px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .note-images { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
+  .note-img { width: 80px; height: 80px; object-fit: cover; border: var(--border); cursor: pointer; transition: opacity 0.12s; }
+  .note-img:hover { opacity: 0.8; }
+  .note-actions { padding: 8px 16px 12px; display: flex; gap: 6px; border-top: var(--border); background: var(--gray-100); }
 
   /* Lightbox */
-  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.82); display: none; align-items: center; justify-content: center; z-index: 900; padding: 20px; }
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 900; padding: 20px; }
   .lightbox.open { display: flex; }
-  .lightbox img { max-width: 100%; max-height: 90vh; border-radius: var(--radius); object-fit: contain; }
-  .lightbox-close { position: absolute; top: 16px; right: 20px; color: white; font-size: 28px; cursor: pointer; background: none; border: none; line-height: 1; }
+  .lightbox img { max-width: 100%; max-height: 90vh; object-fit: contain; }
+  .lightbox-close { position: absolute; top: 16px; right: 20px; color: white; font-size: 24px; cursor: pointer; background: none; border: none; font-weight: 300; }
 
   /* Empty state */
-  .notes-empty { text-align: center; padding: 48px 24px; color: var(--text-hint); font-size: 13px; }
-  .notes-empty-icon { font-size: 36px; margin-bottom: 10px; }
+  .notes-empty { text-align: center; padding: 56px 24px; color: var(--gray-400); font-size: 13px; border: var(--border); background: var(--white); }
+  .notes-empty-icon { font-size: 32px; margin-bottom: 12px; }
 
-  .toast { position: fixed; bottom: 20px; right: 20px; background: #1a1a18; color: white; font-size: 13px; padding: 10px 16px; border-radius: var(--radius-sm); opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; z-index: 999; }
+  /* Toast */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--black); color: var(--white); font-size: 12px; font-weight: 600; letter-spacing: 0.04em; padding: 10px 18px; opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none; z-index: 999; }
   .toast.show { opacity: 1; transform: translateY(0); }
   .hidden { display: none !important; }
 
-  .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 500; gap: 12px; font-size: 14px; color: var(--text-secondary); }
-  .spinner { width: 32px; height: 32px; border: 3px solid var(--border-strong); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 500; gap: 14px; font-size: 13px; color: var(--gray-600); letter-spacing: 0.06em; text-transform: uppercase; }
+  .spinner { width: 28px; height: 28px; border: 2px solid var(--gray-200); border-top-color: var(--black); border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
@@ -198,9 +223,9 @@
 
 <div class="header">
   <div class="header-left">
-    <span class="header-logo">SAP ICMR</span>
+    <span class="header-logo">BESTSELLER</span>
     <div class="header-sep"></div>
-    <span class="header-title">Implementeringsguide – Intercompany Matching & Reconciliation</span>
+    <span class="header-title">SAP ICMR Implementeringsguide</span>
   </div>
   <div class="sync-indicator">
     <div class="sync-dot" id="syncDot"></div>
@@ -208,10 +233,9 @@
   </div>
 </div>
 
-<!-- Main tab navigation -->
 <div class="main-tabs">
-  <button class="main-tab active" id="tab-tracker" onclick="switchMainTab('tracker')">📋 Tracker</button>
-  <button class="main-tab" id="tab-notes" onclick="switchMainTab('notes')">📝 Noter & To-do <span class="main-tab-badge" id="todoCount" style="display:none"></span></button>
+  <button class="main-tab active" id="tab-tracker" onclick="switchMainTab('tracker')">Tracker</button>
+  <button class="main-tab" id="tab-notes" onclick="switchMainTab('notes')">Noter & To-do <span class="main-tab-badge" id="todoCount" style="display:none"></span></button>
 </div>
 
 <!-- Tracker page -->
@@ -231,16 +255,16 @@
     </main>
     <aside class="sidebar">
       <div class="card">
-        <div class="card-header"><span class="card-title">📊 Status per fase</span></div>
+        <div class="card-header"><span class="card-title">Status per fase</span></div>
         <div class="card-body" id="phaseSummary" style="padding:8px 12px;"></div>
       </div>
       <div class="card">
-        <div class="card-header"><span class="card-title">ℹ️ Vejledning</span></div>
-        <div class="card-body" style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
-          <p style="margin-bottom:6px">✅ Kryds steps af – gemmes automatisk i skyen.</p>
-          <p style="margin-bottom:6px">➕ Tilføj egne steps med "+ Tilføj step".</p>
-          <p style="margin-bottom:6px">📝 Brug "Noter & To-do" fanen til noter og opgaver.</p>
-          <p>🔄 Siden synkroniserer automatisk hvert 30. sekund.</p>
+        <div class="card-header"><span class="card-title">Vejledning</span></div>
+        <div class="card-body" style="font-size:12px;color:var(--gray-600);line-height:1.7;">
+          <p style="margin-bottom:6px">✓ Kryds steps af – gemmes automatisk i skyen.</p>
+          <p style="margin-bottom:6px">+ Tilføj egne steps med "Tilføj step".</p>
+          <p style="margin-bottom:6px">→ Brug "Noter & To-do" fanen til noter.</p>
+          <p>↺ Siden synkroniserer hvert 30. sekund.</p>
         </div>
       </div>
     </aside>
@@ -251,11 +275,10 @@
 <div class="page" id="page-notes">
   <div class="notes-page">
     <div class="notes-page-header">
-      <span class="notes-page-title">📝 Noter & To-do</span>
+      <span class="notes-page-title">Noter & To-do</span>
       <button class="btn btn-primary" onclick="toggleNoteForm()">+ Tilføj</button>
     </div>
 
-    <!-- Add note form -->
     <div class="note-add-form" id="noteForm">
       <div class="note-type-row">
         <button class="type-btn selected" data-type="todo" onclick="selectNoteType('todo',this)">To-do</button>
@@ -263,21 +286,17 @@
         <button class="type-btn" data-type="note" onclick="selectNoteType('note',this)">Note</button>
       </div>
       <textarea class="form-textarea" id="noteText" placeholder="Skriv en note, to-do eller spørgsmål..." rows="3"></textarea>
-
-      <!-- Image upload -->
       <div class="img-preview-row" id="imgPreviewRow"></div>
       <label class="img-upload-area" onclick="document.getElementById('imgFileInput').click()">
         <input type="file" id="imgFileInput" accept="image/*" multiple onchange="handleImageUpload(this)">
         <span>📎</span> <span>Vedhæft billede(r) – klik for at vælge</span>
       </label>
-
       <div class="form-actions">
         <button class="btn btn-primary" onclick="addNote()">Gem</button>
         <button class="btn btn-ghost" onclick="toggleNoteForm()">Annuller</button>
       </div>
     </div>
 
-    <!-- Filter buttons -->
     <div class="notes-filter-row">
       <button class="filter-btn active" data-filter="all" onclick="setNoteFilter('all',this)">Alle</button>
       <button class="filter-btn" data-filter="todo" onclick="setNoteFilter('todo',this)">To-do</button>
@@ -288,13 +307,12 @@
 
     <div class="notes-grid" id="notesList"></div>
     <div class="notes-empty hidden" id="notesEmpty">
-      <div class="notes-empty-icon">📭</div>
+      <div class="notes-empty-icon">—</div>
       <div>Ingen noter endnu – klik "+ Tilføj" for at oprette en</div>
     </div>
   </div>
 </div>
 
-<!-- Lightbox -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
   <img id="lightboxImg" src="" alt="Billede">
@@ -308,17 +326,17 @@ const API_KEY = '$2a$10$kCK3OiMDQK.0haMvnj4RreZsjnfBuJkp022mz7Z54.yVKXDN/Hj.y';
 const BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
 
 const DEFAULT_PHASES = [
-  {id:'1',color:'#185FA5',bg:'#E6F1FB',title:'Autorisation & Business Role',desc:'Tildel rettigheder i Fiori og backend',steps:[
+  {id:'1',color:'#185FA5',bg:'#dbeafe',title:'Autorisation & Business Role',desc:'Tildel rettigheder i Fiori og backend',steps:[
     {id:'1-0',name:'Opret Business Role baseret på SAP_BR_RECON_ACCOUNTANT',tcode:'',body:'Gå til Fiori Launchpad → Manage Business Roles. Kopier standardrollen <code>SAP_BR_RECON_ACCOUNTANT</code>. Tilpas med følgende Business Catalogs:<ul><li><code>SAP_FIN_BC_ICA_ME_CONFIG</code> – Matching Settings</li><li><code>SAP_FIN_BC_ICA_ME_RUN</code> – Matching Operations</li><li><code>SAP_FIN_BC_ICA_RECON_CFG</code> – Reconciliation Settings</li><li><code>SAP_FIN_BC_ICA_RECON_RUN</code> – Reconciliation Operations</li><li><code>SAP_FIN_BC_ICA_CONFIG</code> – Intercompany Configuration</li></ul><div class="step-note">Tildel kun de catalogs der er relevante for den pågældende bruger.</div>'},
     {id:'1-1',name:'Sæt backend-autorisationer op',tcode:'PFCG',body:'Kør transaktion PFCG i backend. Opret/tilpas roller med ICMR-specifikke autorisationsobjekter. Sørg for at workflow-godkendere har korrekte roller i både frontend og backend.'},
     {id:'1-2',name:'Opret Business Partner for workflow-brugere',tcode:'SU01',body:'Brugere der skal modtage workflow-notifikationer skal konverteres til Business Partners:<ul><li>Opret Employee i HR</li><li>Tildel SU01-bruger til Employee</li><li>Definer email-adresse på Employee</li><li>Kør Business Partner Synchronization</li></ul><div class="step-note">Se SAP Note 2570961 for detaljerede instruktioner.</div>'}
   ]},
-  {id:'2',color:'#0F6E56',bg:'#E1F5EE',title:'Data Source & Customizing',desc:'Konfigurer datakilde og grundindstillinger via ICAIMG',steps:[
+  {id:'2',color:'#0F6E56',bg:'#dcfce7',title:'Data Source & Customizing',desc:'Konfigurer datakilde og grundindstillinger via ICAIMG',steps:[
     {id:'2-0',name:'Åbn ICMR Customizing',tcode:'ICAIMG',body:'Transaktion ICAIMG er indgangsporten til alle ICMR Customizing-aktiviteter: Maintain Data Sources, Maintain Reason Codes, Assign Posting Rules, Activate Reconciliation Close Process, Define Organizational Unit Hierarchies.'},
     {id:'2-1',name:'Verificer/tilpas Data Source',tcode:'ICADS',body:'Kør ICADS (Maintain Data Sources). Standard datakilde er baseret på <code>ACDOCA</code>. Kontrollér:<ul><li>Mandatory Filter Fields (MFF)</li><li>CDS View – definerer tilgængelige felter</li><li>Matching Dimensions – Company, Profit Center, Consolidation Unit</li></ul><div class="step-note">Delta Update Mode: Efterfølgende runs læser kun nye dokumenter siden sidst. Se SAP Note 3114279.</div>'},
     {id:'2-2',name:'Aktiver SAP Best Practices indhold',tcode:'',body:'Aktiver scope item <code>40Y</code> eller <code>1SG</code> for adgang til pre-leverede sample objekter (SF101).<div class="step-note">Se SAP Note 2965516 for detaljer.</div>'}
   ]},
-  {id:'3',color:'#993C1D',bg:'#FAECE7',title:'Intercompany Document Matching',desc:'Definer matchingmetoder, regler og planlæg matching runs',steps:[
+  {id:'3',color:'#993C1D',bg:'#fee2e2',title:'Intercompany Document Matching',desc:'Definer matchingmetoder, regler og planlæg matching runs',steps:[
     {id:'3-0',name:'Definer Matching Method',tcode:'',body:'Åbn "Define Matching Methods". Konfigurér navn, beskrivelse, data source, Data Filters og Data Slices (Del 1 = Leading Unit, Del 2 = Partner Unit).<div class="step-note">Brug sample metoden SF101 som udgangspunkt – 16 regler for AR/AP.</div>'},
     {id:'3-1',name:'Definer Matching Rules',tcode:'',body:'For hver regel: Expression fields, Operator (Equal To/Opposite = grøn, andre = gul), Regeltype (Auto-Assign, Group as Assigned, Auto-Assign as Exception) og Default Reason Code.'},
     {id:'3-2',name:'Definer Reason Codes',tcode:'ICARC',body:'Reason codes definerer follow-up:<ul><li>No Follow-Ups → 30 Matched direkte</li><li>Comment Required → kommentar → 30 Matched</li><li>With Adjustment Class → automatisk variance adjustment</li><li>With Workflow Scenario → kræver godkendelse</li><li>Temporary Resolution → ophæves i næste run</li></ul>'},
@@ -326,14 +344,14 @@ const DEFAULT_PHASES = [
     {id:'3-4',name:'Planlæg Matching Run Jobs',tcode:'',body:'Opsæt planlagte matching jobs: Schedule Matching Run Jobs – By Company, By Consolidation Unit, eller General. Resultater gemmes i <code>ICADOCM</code>.'},
     {id:'3-5',name:'Test matching manuelt',tcode:'',body:'Define Matching Methods → vælg metode → Run Matching. Tjek status: Active and Running → Finished. Naviger via Check Result til Manage Matching Documents.<div class="step-note">Item status flow: 00 New → 01 Roll-In → 20 Assigned → 30 Matched</div>'}
   ]},
-  {id:'4',color:'#534AB7',bg:'#EEEDFE',title:'Intercompany Reconciliation',desc:'Definer reconciliation cases, teams og close process',steps:[
+  {id:'4',color:'#534AB7',bg:'#ede9fe',title:'Intercompany Reconciliation',desc:'Definer reconciliation cases, teams og close process',steps:[
     {id:'4-0',name:'Definer Reconciliation Case',tcode:'',body:'Åbn "Define Reconciliation Cases". 1:1 mapping til Matching Method. Konfigurér Display Groups med to sider + filterkriterier + tolerance settings. Udpeg Leading Display Group.<div class="step-note">Eksempel: DG1 = AR (leading) vs AP (partner); DG2 = AP vs AR → netting view.</div>'},
     {id:'4-1',name:'Definer Org. Unit Hierarkier (valgfrit)',tcode:'',body:'Åbn "Define Organizational Unit Hierarchies". Bruges ved konsolideringshierarki ud over selskabsdimension.<div class="step-note">NB: Workflow understøtter pt. kun company-dimension.</div>'},
     {id:'4-2',name:'Konfigurér Teams & Responsibilities',tcode:'',body:'Åbn "Manage Teams and Responsibilities – Intercompany" (F6783). Team type ICAMT. Tildel companies og matching methods. Roller: ICAM_SV (Godkend), ICAM_SP (Superviser), ICAM_COMM (Kommunikation).'},
     {id:'4-3',name:'Aktivér Reconciliation Close Process',tcode:'ICAARC',body:'For hver Reconciliation Case: Period Initially Closed, Close Prerequisite (No Prerequisite / All Assigned / All Matched), Workflow Option, Workflow Scenario (WS78500026 / WS78500027).'},
     {id:'4-4',name:'Konfigurér Variance Adjustment Workflow (valgfrit)',tcode:'',body:'Åbn "Manage Workflows – Intercompany Variance Adjustment". Konfigurér trin og modtagere baseret på teams.'}
   ]},
-  {id:'5',color:'#5F5E5A',bg:'#F1EFE8',title:'Drift & Løbende overvågning',desc:'Daglig brug, rapportering og vedligeholdelse',steps:[
+  {id:'5',color:'#5F5E5A',bg:'#f5f5f4',title:'Drift & Løbende overvågning',desc:'Daglig brug, rapportering og vedligeholdelse',steps:[
     {id:'5-0',name:'Daglig drift: Manage Assignments',tcode:'',body:'Åbn "Manage Assignments" → vælg matchingmetode → angiv selskab → Go. Handlinger: Auto-Match, Assign, Unassign, Process, Communicate.'},
     {id:'5-1',name:'Reconciliation rapportering',tcode:'',body:'Reconciliation Status Overview: Overblik per selskab. Reconciliation Balances: AR/AP detaljer med drill-through. Manage Reconciliation Close: Luk periodeafstemning.'},
     {id:'5-2',name:'Transport og data management',tcode:'',body:'Transport: Download/Upload i Define Matching Methods og Define Reconciliation Cases. Arkivering: ICA_JOURNA / ICA_JOURNA_DES.'}
@@ -342,133 +360,64 @@ const DEFAULT_PHASES = [
 
 let state = {
   phases: JSON.parse(JSON.stringify(DEFAULT_PHASES)),
-  checked: {},
-  notes: [],
-  phaseExpanded: {},
-  expanded: {},
-  nextCustomId: 1000,
-  activePhase: 'all'
+  checked: {}, notes: [], phaseExpanded: {}, expanded: {}, nextCustomId: 1000, activePhase: 'all'
 };
-
-let isSaving = false;
-let pendingSave = false;
-let pollTimer = null;
-let currentNoteType = 'todo';
-let pendingImages = []; // [{dataUrl, name}]
-let currentNoteFilter = 'all';
-let activeMainTab = 'tracker';
+let isSaving = false, pendingSave = false;
+let currentNoteType = 'todo', pendingImages = [], currentNoteFilter = 'all';
 
 function setSyncStatus(s) {
-  const dot = document.getElementById('syncDot');
-  const lbl = document.getElementById('syncLabel');
-  dot.className = 'sync-dot ' + s;
-  lbl.textContent = {syncing:'Gemmer...', synced:'Synkroniseret', error:'Synkroniseringsfejl', '':'Forbinder...'}[s] || s;
+  document.getElementById('syncDot').className = 'sync-dot ' + s;
+  document.getElementById('syncLabel').textContent = {syncing:'Gemmer...', synced:'Synkroniseret', error:'Fejl', '':'Forbinder...'}[s] || s;
 }
-
 async function cloudGet() {
-  const res = await fetch(BIN_URL + '/latest', {
-    headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' }
-  });
-  if (!res.ok) throw new Error('GET fejlede: ' + res.status);
+  const res = await fetch(BIN_URL + '/latest', { headers: { 'X-Master-Key': API_KEY, 'X-Bin-Meta': 'false' } });
+  if (!res.ok) throw new Error('GET ' + res.status);
   return await res.json();
 }
-
 async function cloudPut(data) {
-  const res = await fetch(BIN_URL, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-    body: JSON.stringify(data)
-  });
-  if (!res.ok) throw new Error('PUT fejlede: ' + res.status);
+  const res = await fetch(BIN_URL, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY }, body: JSON.stringify(data) });
+  if (!res.ok) throw new Error('PUT ' + res.status);
   return await res.json();
 }
-
 function buildPayload() {
-  return {
-    checked: state.checked,
-    notes: state.notes,
-    phases: state.phases,
-    nextCustomId: state.nextCustomId,
-    phaseExpanded: state.phaseExpanded
-  };
+  return { checked: state.checked, notes: state.notes, phases: state.phases, nextCustomId: state.nextCustomId, phaseExpanded: state.phaseExpanded };
 }
-
 function mergeRemote(remote) {
   if (!remote) return false;
   let changed = false;
-  if (remote.checked && JSON.stringify(remote.checked) !== JSON.stringify(state.checked)) {
-    state.checked = remote.checked; changed = true;
-  }
-  if (remote.notes && JSON.stringify(remote.notes) !== JSON.stringify(state.notes)) {
-    state.notes = remote.notes; changed = true;
-  }
-  if (remote.phases && remote.phases.length > 0 && JSON.stringify(remote.phases) !== JSON.stringify(state.phases)) {
-    state.phases = remote.phases; changed = true;
-  }
+  if (remote.checked && JSON.stringify(remote.checked) !== JSON.stringify(state.checked)) { state.checked = remote.checked; changed = true; }
+  if (remote.notes && JSON.stringify(remote.notes) !== JSON.stringify(state.notes)) { state.notes = remote.notes; changed = true; }
+  if (remote.phases && remote.phases.length > 0 && JSON.stringify(remote.phases) !== JSON.stringify(state.phases)) { state.phases = remote.phases; changed = true; }
   if (remote.nextCustomId) state.nextCustomId = remote.nextCustomId;
   if (remote.phaseExpanded) state.phaseExpanded = remote.phaseExpanded;
   return changed;
 }
-
 async function initialLoad() {
-  document.getElementById('loadingMsg').textContent = 'Henter data fra skyen...';
   try {
     const remote = await cloudGet();
-    if (!remote.phases || remote.phases.length === 0) {
-      document.getElementById('loadingMsg').textContent = 'Opretter data i skyen...';
-      await cloudPut(buildPayload());
-    } else {
-      mergeRemote(remote);
-    }
+    if (!remote.phases || remote.phases.length === 0) { await cloudPut(buildPayload()); }
+    else { mergeRemote(remote); }
     setSyncStatus('synced');
-  } catch(e) {
-    console.error('Initialload fejl:', e);
-    setSyncStatus('error');
-    showToast('⚠️ Kunne ikke forbinde til skyen – kører lokalt');
-  }
+  } catch(e) { setSyncStatus('error'); showToast('Offline – kører lokalt'); }
   document.getElementById('loadingOverlay').style.display = 'none';
   render();
-  startPolling();
+  setInterval(async () => {
+    try { const r = await cloudGet(); if (mergeRemote(r)) { render(); setSyncStatus('synced'); showToast('Opdateret fra skyen'); } }
+    catch(e) {}
+  }, 30000);
 }
-
 async function scheduleSave() {
   if (isSaving) { pendingSave = true; return; }
-  isSaving = true;
-  setSyncStatus('syncing');
-  try {
-    await cloudPut(buildPayload());
-    setSyncStatus('synced');
-  } catch(e) {
-    console.error('Gem fejl:', e);
-    setSyncStatus('error');
-    showToast('⚠️ Gem fejlede – prøver igen...');
-  }
+  isSaving = true; setSyncStatus('syncing');
+  try { await cloudPut(buildPayload()); setSyncStatus('synced'); }
+  catch(e) { setSyncStatus('error'); showToast('Gem fejlede'); }
   isSaving = false;
   if (pendingSave) { pendingSave = false; scheduleSave(); }
 }
 
-function startPolling() {
-  pollTimer = setInterval(async () => {
-    try {
-      const remote = await cloudGet();
-      const changed = mergeRemote(remote);
-      if (changed) { render(); setSyncStatus('synced'); showToast('🔄 Opdateret fra skyen'); }
-    } catch(e) { console.warn('Polling fejl:', e); }
-  }, 30000);
-}
+function render() { renderTabs(); renderPhases(); renderNotes(); updateProgress(); updatePhaseSummary(); updateTodoBadge(); }
 
-function render() {
-  renderTabs();
-  renderPhases();
-  renderNotes();
-  updateProgress();
-  updatePhaseSummary();
-  updateTodoBadge();
-}
-
-// ---- Main tab switching ----
 function switchMainTab(tab) {
-  activeMainTab = tab;
   document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -478,11 +427,9 @@ function switchMainTab(tab) {
 function updateTodoBadge() {
   const count = state.notes.filter(n => n.type === 'todo').length;
   const badge = document.getElementById('todoCount');
-  if (count > 0) { badge.textContent = count; badge.style.display = ''; }
-  else { badge.style.display = 'none'; }
+  badge.textContent = count; badge.style.display = count > 0 ? '' : 'none';
 }
 
-// ---- Tracker ----
 function renderTabs() {
   const c = document.getElementById('phaseTabs');
   let html = `<button class="phase-tab ${state.activePhase==='all'?'active':''}" onclick="setPhase('all')">Alle faser</button>`;
@@ -493,8 +440,7 @@ function renderTabs() {
 }
 
 function renderPhases() {
-  const c = document.getElementById('phaseList');
-  c.innerHTML = '';
+  const c = document.getElementById('phaseList'); c.innerHTML = '';
   state.phases.forEach(ph => {
     const isVisible = state.activePhase === 'all' || state.activePhase === ph.id;
     const isOpen = state.phaseExpanded[ph.id] !== false;
@@ -517,8 +463,7 @@ function renderPhases() {
         </div>`;
     });
     const div = document.createElement('div');
-    div.className = 'phase';
-    div.style.display = isVisible ? 'block' : 'none';
+    div.className = 'phase'; div.style.display = isVisible ? 'block' : 'none';
     div.innerHTML = `
       <div class="phase-header" onclick="togglePhase('${ph.id}')">
         <div class="phase-badge" style="background:${ph.bg};color:${ph.color}">${ph.id}</div>
@@ -566,12 +511,12 @@ function updatePhaseSummary() {
     const done = ph.steps.filter(s => state.checked[s.id]).length;
     const total = ph.steps.length;
     const pct = total ? Math.round(done/total*100) : 0;
-    return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--border)">
-      <div style="width:20px;height:20px;border-radius:50%;background:${ph.bg};color:${ph.color};font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ph.id}</div>
-      <div style="flex:1;font-size:12px;font-weight:500;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${ph.title}</div>
-      <div style="font-size:12px;color:var(--text-hint);flex-shrink:0">${done}/${total}</div>
-      <div style="width:50px;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;flex-shrink:0">
-        <div style="width:${pct}%;height:100%;background:${ph.color};border-radius:2px"></div>
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--gray-200)">
+      <div style="width:22px;height:22px;background:${ph.bg};color:${ph.color};font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ph.id}</div>
+      <div style="flex:1;font-size:11px;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${ph.title}</div>
+      <div style="font-size:11px;color:var(--gray-600);flex-shrink:0">${done}/${total}</div>
+      <div style="width:48px;height:3px;background:var(--gray-200);overflow:hidden;flex-shrink:0">
+        <div style="width:${pct}%;height:100%;background:${ph.color}"></div>
       </div>
     </div>`;
   }).join('');
@@ -586,39 +531,28 @@ function setPhase(id) {
     btn.classList.toggle('active', (id==='all'&&btn.textContent.startsWith('Alle')) || btn.textContent.startsWith(id+' ·'));
   });
 }
-
 function togglePhase(id) {
   const body = document.getElementById('phase-body-'+id);
   const chevron = body.previousElementSibling.querySelector('.phase-chevron');
   const isOpen = body.style.display !== 'none';
   body.style.display = isOpen ? 'none' : 'block';
   chevron?.classList.toggle('open', !isOpen);
-  state.phaseExpanded[id] = !isOpen;
-  scheduleSave();
+  state.phaseExpanded[id] = !isOpen; scheduleSave();
 }
-
 function toggleStep(stepId) {
   const body = document.querySelector('#step-'+stepId+' .step-body');
   const icon = document.querySelector('#step-'+stepId+' .step-expand');
   const isOpen = body.classList.contains('open');
-  body.classList.toggle('open', !isOpen);
-  icon.classList.toggle('open', !isOpen);
+  body.classList.toggle('open', !isOpen); icon.classList.toggle('open', !isOpen);
   state.expanded[stepId] = !isOpen;
 }
-
 function toggleCheck(stepId, cb) {
   state.checked[stepId] = cb.checked;
   document.getElementById('step-'+stepId)?.classList.toggle('done', cb.checked);
-  updateProgress();
-  updatePhaseSummary();
-  scheduleSave();
-  showToast(cb.checked ? '✅ Markeret som udført' : '↩ Markering fjernet');
+  updateProgress(); updatePhaseSummary(); scheduleSave();
+  showToast(cb.checked ? 'Markeret som udført' : 'Markering fjernet');
 }
-
-function showAddForm(id) {
-  document.getElementById('add-form-'+id).classList.add('open');
-  document.getElementById('new-name-'+id).focus();
-}
+function showAddForm(id) { document.getElementById('add-form-'+id).classList.add('open'); document.getElementById('new-name-'+id).focus(); }
 function hideAddForm(id) {
   document.getElementById('add-form-'+id).classList.remove('open');
   ['name','tcode','body'].forEach(f => { const el = document.getElementById('new-'+f+'-'+id); if(el) el.value=''; });
@@ -628,105 +562,69 @@ function addStep(phaseId) {
   if (!name) return;
   const tcode = document.getElementById('new-tcode-'+phaseId).value.trim();
   const body = document.getElementById('new-body-'+phaseId).value.trim();
-  const ph = state.phases.find(p => p.id===phaseId);
-  if (!ph) return;
+  const ph = state.phases.find(p => p.id===phaseId); if (!ph) return;
   ph.steps.push({ id: phaseId+'-c-'+(state.nextCustomId++), name, tcode, body: body||'(Ingen beskrivelse)' });
-  scheduleSave();
-  render();
-  showToast('➕ Step tilføjet');
+  scheduleSave(); render(); showToast('Step tilføjet');
 }
 function deleteStep(phaseId, stepId) {
   if (!confirm('Slet dette step?')) return;
-  const ph = state.phases.find(p => p.id===phaseId);
-  if (!ph) return;
-  ph.steps = ph.steps.filter(s => s.id!==stepId);
-  delete state.checked[stepId];
-  scheduleSave();
-  render();
-  showToast('🗑 Step slettet');
+  const ph = state.phases.find(p => p.id===phaseId); if (!ph) return;
+  ph.steps = ph.steps.filter(s => s.id!==stepId); delete state.checked[stepId];
+  scheduleSave(); render(); showToast('Step slettet');
 }
 
-// ---- Notes & To-do ----
+// ── Notes ──
 function toggleNoteForm() {
-  const f = document.getElementById('noteForm');
-  f.classList.toggle('open');
-  if (f.classList.contains('open')) {
-    document.getElementById('noteText').focus();
-  } else {
-    pendingImages = [];
-    renderImagePreviews();
-    document.getElementById('noteText').value = '';
-    document.getElementById('imgFileInput').value = '';
-  }
+  const f = document.getElementById('noteForm'); f.classList.toggle('open');
+  if (f.classList.contains('open')) { document.getElementById('noteText').focus(); }
+  else { pendingImages = []; renderImagePreviews(); document.getElementById('noteText').value = ''; document.getElementById('imgFileInput').value = ''; }
 }
-
 function selectNoteType(type, btn) {
   currentNoteType = type;
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
 }
-
 function setNoteFilter(filter, btn) {
   currentNoteFilter = filter;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderNotes();
+  btn.classList.add('active'); renderNotes();
 }
-
 function handleImageUpload(input) {
-  const files = Array.from(input.files);
-  files.forEach(file => {
+  Array.from(input.files).forEach(file => {
     const reader = new FileReader();
-    reader.onload = (e) => {
-      pendingImages.push({ dataUrl: e.target.result, name: file.name });
-      renderImagePreviews();
-    };
+    reader.onload = (e) => { pendingImages.push({ dataUrl: e.target.result, name: file.name }); renderImagePreviews(); };
     reader.readAsDataURL(file);
   });
   input.value = '';
 }
-
 function renderImagePreviews() {
-  const row = document.getElementById('imgPreviewRow');
-  row.innerHTML = pendingImages.map((img, i) => `
+  document.getElementById('imgPreviewRow').innerHTML = pendingImages.map((img, i) => `
     <div class="img-thumb-wrap">
       <img class="img-thumb" src="${img.dataUrl}" alt="${img.name}">
       <button class="img-thumb-del" onclick="removePendingImage(${i})">✕</button>
     </div>`).join('');
 }
-
-function removePendingImage(i) {
-  pendingImages.splice(i, 1);
-  renderImagePreviews();
-}
+function removePendingImage(i) { pendingImages.splice(i, 1); renderImagePreviews(); }
 
 function addNote() {
-  const text = document.getElementById('noteText').value.trim();
-  if (!text) return;
+  const text = document.getElementById('noteText').value.trim(); if (!text) return;
+  // Assign next sequential number based on total notes ever created
+  const num = (state.notes.length > 0 ? Math.max(...state.notes.map(n => n.num || 0)) : 0) + 1;
   state.notes.unshift({
-    id: Date.now(),
-    type: currentNoteType,
-    text,
+    id: Date.now(), num,
+    type: currentNoteType, text,
     date: new Date().toLocaleDateString('da-DK',{day:'numeric',month:'short',year:'numeric'}),
     images: pendingImages.map(img => img.dataUrl)
   });
   document.getElementById('noteText').value = '';
   document.getElementById('noteForm').classList.remove('open');
-  pendingImages = [];
-  renderImagePreviews();
-  scheduleSave();
-  renderNotes();
-  updateTodoBadge();
-  showToast('📝 Note gemt');
+  pendingImages = []; renderImagePreviews();
+  scheduleSave(); renderNotes(); updateTodoBadge(); showToast('Note gemt');
 }
-
 function deleteNote(id) {
   state.notes = state.notes.filter(n => n.id!==id);
-  scheduleSave();
-  renderNotes();
-  updateTodoBadge();
+  scheduleSave(); renderNotes(); updateTodoBadge();
 }
-
 function markNoteType(id, type) {
   const n = state.notes.find(n => n.id===id);
   if (n) { n.type = type; scheduleSave(); renderNotes(); updateTodoBadge(); }
@@ -739,30 +637,31 @@ function renderNotes() {
     ? state.notes
     : state.notes.filter(n => n.type === currentNoteFilter);
 
-  if (!filtered.length) {
-    list.innerHTML = '';
-    empty.classList.remove('hidden');
-    return;
-  }
+  if (!filtered.length) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
   empty.classList.add('hidden');
 
-  const tl = {todo:'To-do',issue:'Afklares',note:'Note',done:'Udført'};
-  const tb = {todo:'badge-todo',issue:'badge-issue',note:'badge-note',done:'badge-done'};
+  const tl = {todo:'To-do', issue:'Afklares', note:'Note', done:'Udført'};
+  const tb = {todo:'badge-todo', issue:'badge-issue', note:'badge-note', done:'badge-done'};
 
-  list.innerHTML = filtered.map(n => {
+  list.innerHTML = filtered.map((n, idx) => {
+    const num = n.num || (filtered.length - idx);
     const imgs = (n.images || []).map((src, i) =>
       `<img class="note-img" src="${src}" alt="Billede" onclick="openLightbox('${n.id}',${i})">`
     ).join('');
     return `
     <div class="note-card type-${n.type}">
       <div class="note-card-body">
-        <span class="note-type-badge ${tb[n.type]}">${tl[n.type]}</span>
+        <div class="note-header-row">
+          <span class="note-num">#${num}</span>
+          <span class="note-type-badge ${tb[n.type]}">${tl[n.type]}</span>
+          ${n.type==='done' ? '<span class="note-done-mark">✓ Udført</span>' : ''}
+        </div>
         <div class="note-text">${escHtml(n.text)}</div>
         ${imgs ? `<div class="note-images">${imgs}</div>` : ''}
         <div class="note-date">${n.date}</div>
       </div>
       <div class="note-actions">
-        ${n.type!=='done'?`<button class="btn btn-ghost" style="font-size:11px;padding:3px 8px" onclick="markNoteType(${n.id},'done')">✓ Udført</button>`:''}
+        ${n.type!=='done' ? `<button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="markNoteType(${n.id},'done')">✓ Marker udført</button>` : `<button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="markNoteType(${n.id},'todo')">↩ Genåbn</button>`}
         <button class="btn btn-danger" onclick="deleteNote(${n.id})">Slet</button>
       </div>
     </div>`;
@@ -772,8 +671,6 @@ function renderNotes() {
 function escHtml(t) {
   return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
 }
-
-// ---- Lightbox ----
 function openLightbox(noteId, imgIdx) {
   const note = state.notes.find(n => n.id == noteId);
   if (!note || !note.images) return;
@@ -784,11 +681,9 @@ function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
   document.getElementById('lightboxImg').src = '';
 }
-
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
 }
 
