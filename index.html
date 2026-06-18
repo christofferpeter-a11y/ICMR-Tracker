@@ -380,54 +380,31 @@ async function cloudPut(data) {
   return await res.json();
 }
 function buildPayload() {
-  // Strip images from notes before sending to cloud (images live in localStorage)
-  const notesForCloud = state.notes.map(n => {
-    const { images, ...rest } = n;
-    return rest;
-  });
-  return { checked: state.checked, notes: notesForCloud, phases: state.phases, nextCustomId: state.nextCustomId, phaseExpanded: state.phaseExpanded };
+  return { checked: state.checked, notes: state.notes, phases: state.phases, nextCustomId: state.nextCustomId, phaseExpanded: state.phaseExpanded };
 }
 
-function saveImagesToLocal() {
-  state.notes.forEach(n => {
-    if (n.images && n.images.length > 0) {
-      try { localStorage.setItem('note_imgs_' + n.id, JSON.stringify(n.images)); } catch(e) {}
-    }
-  });
-}
-
-function loadImagesFromLocal() {
-  state.notes.forEach(n => {
-    if (!n.images || n.images.length === 0) {
-      try {
-        const stored = localStorage.getItem('note_imgs_' + n.id);
-        if (stored) n.images = JSON.parse(stored);
-      } catch(e) {}
-    }
-  });
-}
-
-function cleanupLocalImages() {
-  const ids = new Set(state.notes.map(n => String(n.id)));
-  Object.keys(localStorage).forEach(k => {
-    if (k.startsWith('note_imgs_') && !ids.has(k.replace('note_imgs_', ''))) {
-      localStorage.removeItem(k);
-    }
+// Compress image to JPEG, max 700px wide, quality 0.45 → ~20-40KB per image
+function compressImage(dataUrl) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 700;
+      let w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.45));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
   });
 }
 function mergeRemote(remote) {
   if (!remote) return false;
   let changed = false;
   if (remote.checked && JSON.stringify(remote.checked) !== JSON.stringify(state.checked)) { state.checked = remote.checked; changed = true; }
-  if (remote.notes) {
-    // Compare without images (cloud notes never have images)
-    const localNoImg = state.notes.map(n => { const {images,...r}=n; return r; });
-    if (JSON.stringify(remote.notes) !== JSON.stringify(localNoImg)) {
-      state.notes = remote.notes;
-      loadImagesFromLocal();
-      changed = true;
-    }
-  }
+  if (remote.notes && JSON.stringify(remote.notes) !== JSON.stringify(state.notes)) { state.notes = remote.notes; changed = true; }
   if (remote.phases && remote.phases.length > 0 && JSON.stringify(remote.phases) !== JSON.stringify(state.phases)) { state.phases = remote.phases; changed = true; }
   if (remote.nextCustomId) state.nextCustomId = remote.nextCustomId;
   if (remote.phaseExpanded) state.phaseExpanded = remote.phaseExpanded;
@@ -440,7 +417,6 @@ async function initialLoad() {
     else { mergeRemote(remote); }
     setSyncStatus('synced');
   } catch(e) { setSyncStatus('error'); showToast('Offline – kører lokalt'); }
-  loadImagesFromLocal();
   document.getElementById('loadingOverlay').style.display = 'none';
   render();
   setInterval(async () => {
@@ -451,9 +427,11 @@ async function initialLoad() {
 async function scheduleSave() {
   if (isSaving) { pendingSave = true; return; }
   isSaving = true; setSyncStatus('syncing');
-  saveImagesToLocal();
   try { await cloudPut(buildPayload()); setSyncStatus('synced'); }
-  catch(e) { setSyncStatus('error'); showToast('Gem fejlede – data er gemt lokalt'); }
+  catch(e) {
+    setSyncStatus('error');
+    showToast('⚠️ Gem fejlede – billederne er måske for store');
+  }
   isSaving = false;
   if (pendingSave) { pendingSave = false; scheduleSave(); }
 }
@@ -635,7 +613,11 @@ function setNoteFilter(filter, btn) {
 function handleImageUpload(input) {
   Array.from(input.files).forEach(file => {
     const reader = new FileReader();
-    reader.onload = (e) => { pendingImages.push({ dataUrl: e.target.result, name: file.name }); renderImagePreviews(); };
+    reader.onload = async (e) => {
+      const compressed = await compressImage(e.target.result);
+      pendingImages.push({ dataUrl: compressed, name: file.name });
+      renderImagePreviews();
+    };
     reader.readAsDataURL(file);
   });
   input.value = '';
@@ -665,7 +647,6 @@ function addNote() {
   scheduleSave(); renderNotes(); updateTodoBadge(); showToast('Note gemt');
 }
 function deleteNote(id) {
-  try { localStorage.removeItem('note_imgs_' + id); } catch(e) {}
   state.notes = state.notes.filter(n => n.id!==id);
   scheduleSave(); renderNotes(); updateTodoBadge();
 }
