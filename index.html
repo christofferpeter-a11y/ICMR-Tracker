@@ -971,6 +971,26 @@ function markNoteType(id, type) {
   const n = state.notes.find(n => n.id===id);
   if (n) { n.type = type; scheduleSave(); renderNotes(); updateTodoBadge(); }
 }
+function showNoteEditForm(id) {
+  document.querySelectorAll('.note-edit-form').forEach(f => f.style.display='none');
+  document.querySelectorAll('[id^="note-text-display-"]').forEach(f => f.style.display='');
+  const form = document.getElementById('note-edit-form-'+id);
+  const display = document.getElementById('note-text-display-'+id);
+  if (form && display) { display.style.display='none'; form.style.display='block'; form.querySelector('textarea')?.focus(); }
+}
+function hideNoteEditForm(id) {
+  const form = document.getElementById('note-edit-form-'+id);
+  const display = document.getElementById('note-text-display-'+id);
+  if (form) form.style.display='none';
+  if (display) display.style.display='';
+}
+function saveNoteEdit(id) {
+  const n = state.notes.find(n => n.id===id); if (!n) return;
+  const val = document.getElementById('note-edit-text-'+id)?.value.trim();
+  if (!val) return;
+  n.text = val;
+  scheduleSave(); renderNotes(); showToast('Note opdateret');
+}
 function showResolutionForm(id) {
   document.querySelectorAll('.note-resolution-form').forEach(f => f.style.display='none');
   const f = document.getElementById('res-form-'+id);
@@ -1013,9 +1033,18 @@ function renderNotes() {
           <span class="note-type-badge ${tb[n.type]}">${tl[n.type]}</span>
           ${n.type==='done' ? '<span class="note-done-mark">✓ Udført</span>' : ''}
         </div>
-        <div class="note-text">${escHtml(n.text)}</div>
+        <div id="note-text-display-${n.id}">
+          <div class="note-text">${escHtml(n.text)}</div>
+        </div>
+        <div class="note-edit-form" id="note-edit-form-${n.id}" style="display:none">
+          <textarea class="form-textarea" id="note-edit-text-${n.id}" style="min-height:70px;margin-bottom:8px">${escAttr(n.text)}</textarea>
+          <div class="form-actions">
+            <button class="btn btn-primary" style="font-size:10px;padding:5px 12px" onclick="saveNoteEdit(${n.id})">Gem ændring</button>
+            <button class="btn btn-ghost" style="font-size:10px;padding:5px 12px" onclick="hideNoteEditForm(${n.id})">Annuller</button>
+          </div>
+        </div>
         ${imgs ? `<div class="note-images">${imgs}</div>` : ''}
-        ${n.resolution ? `<div class="note-resolution"><span class="note-res-label">Løsning / Svar</span>${escHtml(n.resolution)}</div>` : ''}
+        ${n.resolution ? `<div id="note-res-display-${n.id}" class="note-resolution"><span class="note-res-label">Løsning / Svar</span>${escHtml(n.resolution)}</div>` : `<div id="note-res-display-${n.id}"></div>`}
         <div class="note-resolution-form" id="res-form-${n.id}" style="display:none">
           <textarea class="form-textarea" id="res-text-${n.id}" placeholder="Beskriv løsningen eller svaret på opgaven..." style="min-height:70px;margin-bottom:8px">${escAttr(n.resolution||'')}</textarea>
           <div class="form-actions">
@@ -1027,6 +1056,7 @@ function renderNotes() {
       </div>
       <div class="note-actions">
         ${n.type!=='done' ? `<button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="markNoteType(${n.id},'done')">✓ Marker udført</button>` : `<button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="markNoteType(${n.id},'todo')">↩ Genåbn</button>`}
+        <button class="btn btn-ghost note-res-btn" onclick="showNoteEditForm(${n.id})">✎ Rediger opgave</button>
         <button class="btn btn-ghost note-res-btn" onclick="showResolutionForm(${n.id})">${n.resolution ? '✎ Rediger løsning' : '＋ Tilføj løsning'}</button>
         <button class="btn btn-danger" onclick="deleteNote(${n.id})">Slet</button>
       </div>
