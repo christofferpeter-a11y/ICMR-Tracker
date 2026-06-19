@@ -224,6 +224,10 @@
   .note-text { font-size: 13px; color: var(--gray-800); line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
   .note-card.type-done .note-text { color: var(--gray-400); text-decoration: line-through; text-decoration-color: var(--gray-400); }
   .note-date { font-size: 10px; color: var(--gray-400); margin-top: 8px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .note-resolution { margin-top: 10px; padding: 8px 10px; background: #f0fdf4; border-left: 2px solid var(--done-green); font-size: 12px; color: var(--gray-800); line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+  .note-res-label { display: block; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--done-green); margin-bottom: 4px; }
+  .note-resolution-form { margin-top: 10px; padding: 8px 10px; background: var(--gray-100); border: var(--border); }
+  .note-res-btn { font-size: 10px; padding: 4px 10px; }
   .note-images { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
   .note-img { width: 80px; height: 80px; object-fit: cover; border: var(--border); cursor: pointer; transition: opacity 0.12s; }
   .note-img:hover { opacity: 0.8; }
@@ -967,6 +971,21 @@ function markNoteType(id, type) {
   const n = state.notes.find(n => n.id===id);
   if (n) { n.type = type; scheduleSave(); renderNotes(); updateTodoBadge(); }
 }
+function showResolutionForm(id) {
+  document.querySelectorAll('.note-resolution-form').forEach(f => f.style.display='none');
+  const f = document.getElementById('res-form-'+id);
+  if (f) { f.style.display='block'; f.querySelector('textarea')?.focus(); }
+}
+function hideResolutionForm(id) {
+  const f = document.getElementById('res-form-'+id);
+  if (f) f.style.display='none';
+}
+function saveResolution(id) {
+  const n = state.notes.find(n => n.id===id); if (!n) return;
+  const val = document.getElementById('res-text-'+id)?.value.trim() || '';
+  n.resolution = val;
+  scheduleSave(); renderNotes(); updateTodoBadge(); showToast('Løsning gemt');
+}
 
 function renderNotes() {
   const list = document.getElementById('notesList');
@@ -996,10 +1015,19 @@ function renderNotes() {
         </div>
         <div class="note-text">${escHtml(n.text)}</div>
         ${imgs ? `<div class="note-images">${imgs}</div>` : ''}
+        ${n.resolution ? `<div class="note-resolution"><span class="note-res-label">Løsning / Svar</span>${escHtml(n.resolution)}</div>` : ''}
+        <div class="note-resolution-form" id="res-form-${n.id}" style="display:none">
+          <textarea class="form-textarea" id="res-text-${n.id}" placeholder="Beskriv løsningen eller svaret på opgaven..." style="min-height:70px;margin-bottom:8px">${escAttr(n.resolution||'')}</textarea>
+          <div class="form-actions">
+            <button class="btn btn-primary" style="font-size:10px;padding:5px 12px" onclick="saveResolution(${n.id})">Gem løsning</button>
+            <button class="btn btn-ghost" style="font-size:10px;padding:5px 12px" onclick="hideResolutionForm(${n.id})">Annuller</button>
+          </div>
+        </div>
         <div class="note-date">${n.date}</div>
       </div>
       <div class="note-actions">
         ${n.type!=='done' ? `<button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="markNoteType(${n.id},'done')">✓ Marker udført</button>` : `<button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="markNoteType(${n.id},'todo')">↩ Genåbn</button>`}
+        <button class="btn btn-ghost note-res-btn" onclick="showResolutionForm(${n.id})">${n.resolution ? '✎ Rediger løsning' : '＋ Tilføj løsning'}</button>
         <button class="btn btn-danger" onclick="deleteNote(${n.id})">Slet</button>
       </div>
     </div>`;
